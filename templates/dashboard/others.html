@@ -1,0 +1,200 @@
+{% extends "dashboard/base_dashboard.html" %}
+
+{% block title %}Others - Dashboard{% endblock %}
+
+{% block dashboard_content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-md);">
+    <h1>Achievements & Certifications</h1>
+    <button class="btn btn-primary" onclick="openAddItemModal()">+ Add Achievement</button>
+</div>
+
+<!-- Items List -->
+<div id="items-container" class="bento-grid">
+    {% for item in items %}
+    <div class="card" data-item-id="{{ item.id }}">
+        <!-- Media Display -->
+        {% if item.youtube_id %}
+        <div style="margin-bottom: 12px; border-radius: 8px; overflow: hidden; aspect-ratio: 16/9;">
+            <iframe width="100%" height="100%" src="https://www.youtube.com/embed/{{ item.youtube_id }}" frameborder="0"
+                allowfullscreen></iframe>
+        </div>
+        {% endif %}
+
+        {% if item.images and item.images|length > 0 %}
+        <div style="display: flex; gap: 8px; overflow-x: auto; margin-bottom: 12px; padding-bottom: 4px;">
+            {% for img in item.images %}
+            <img src="{{ url_for('static', filename='uploads/' + img.image_path) }}"
+                style="height: 120px; min-width: 160px; object-fit: cover; border-radius: 8px;">
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <h3>{{ item.title }}</h3>
+
+        {% if item.achieved_date %}
+        <span class="pill" style="display: inline-block; margin: 4px 0 8px;">📅 {{ item.achieved_date }}</span>
+        {% endif %}
+
+        <p style="color: var(--text-muted); margin: 8px 0; white-space: pre-wrap;">{{ item.description or 'No
+            description provided' }}</p>
+
+        {% if item.links and item.links|length > 0 %}
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0;">
+            {% for link in item.links %}
+            <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-small"
+                style="font-size: 11px; padding: 4px 10px;">
+                🔗 {{ link.label }}
+            </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div style="display: flex; gap: 12px; margin-top: 16px;">
+            <button class="btn btn-small btn-outline" onclick="editItem({{ item.id }})">Edit</button>
+            <button class="btn btn-small btn-outline" style="color: #dc3545;"
+                onclick="deleteItem({{ item.id }})">Delete</button>
+        </div>
+    </div>
+    {% else %}
+    <div class="card" style="text-align: center; padding: var(--space-xl); grid-column: 1 / -1;">
+        <p style="color: var(--text-muted);">No achievements added yet. Click "Add Achievement" to get started!</p>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Add/Edit Item Modal -->
+<div class="modal-overlay" id="item-modal" style="display: none;" onclick="closeItemModal()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <h2 id="modal-title">Add Achievement</h2>
+        <form method="POST" action="{{ url_for('dashboard.add_other') }}" enctype="multipart/form-data" id="item-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="item_id" id="item-id">
+
+            <div class="form-group">
+                <label class="form-label">Title</label>
+                <input type="text" name="title" id="item-title" class="form-control" required
+                    placeholder="e.g., AWS Certified Solutions Architect">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Date Achieved (Optional)</label>
+                <input type="text" name="achieved_date" id="item-date" class="form-control"
+                    placeholder="e.g., 2024 or Jan 2024">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Description (Optional)</label>
+                <textarea name="description" id="item-description" class="form-control" rows="4"
+                    placeholder="Provide details about this achievement..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">YouTube URL (Optional)</label>
+                <input type="url" name="youtube_url" id="item-youtube" class="form-control"
+                    placeholder="https://youtube.com/...">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Images (Optional, max 10)</label>
+                <input type="file" name="images" id="item-images" class="form-control" accept="image/*" multiple>
+                <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">Select up to 10 images</p>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Proof Links (Optional)</label>
+                <div id="item-links-container"></div>
+                <button type="button" class="btn btn-outline btn-small" onclick="addItemProofLink()">+ Add Link</button>
+                <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">Add certificate links or proof
+                    URLs</p>
+            </div>
+
+            <div style="display: flex; gap: 12px; margin-top: var(--space-md);">
+                <button type="submit" class="btn btn-primary">Save Achievement</button>
+                <button type="button" class="btn btn-outline" onclick="closeItemModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let itemLinkCounter = 0;
+
+    function addItemProofLink(label = '', url = '') {
+        const container = document.getElementById('item-links-container');
+        const newRow = document.createElement('div');
+        newRow.className = 'link-row';
+        newRow.style.cssText = 'display: flex; gap: 12px; margin-bottom: 12px; align-items: center;';
+        newRow.innerHTML = `
+            <input type="text" class="form-control" name="link_label_${itemLinkCounter}" placeholder="Label (e.g., Certificate)" value="${label}" style="flex: 0 0 180px;">
+            <input type="url" class="form-control" name="link_url_${itemLinkCounter}" placeholder="https://..." value="${url}">
+            <button type="button" class="btn btn-outline btn-small" onclick="removeItemLinkElem(this)" style="color: #dc3545;">&times;</button>
+        `;
+        container.appendChild(newRow);
+        itemLinkCounter++;
+    }
+
+    function removeItemLinkElem(btn) {
+        btn.parentElement.remove();
+    }
+
+    function openAddItemModal() {
+        document.getElementById('modal-title').textContent = 'Add Achievement';
+        document.getElementById('item-form').action = '{{ url_for("dashboard.add_other") }}';
+        document.getElementById('item-form').reset();
+        document.getElementById('item-id').value = '';
+        document.getElementById('item-links-container').innerHTML = '';
+        itemLinkCounter = 0;
+        document.getElementById('item-modal').style.display = 'flex';
+    }
+
+    function closeItemModal() {
+        document.getElementById('item-modal').style.display = 'none';
+    }
+
+    function editItem(itemId) {
+        fetch(`/dashboard/others/${itemId}`)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('modal-title').textContent = 'Edit Achievement';
+                document.getElementById('item-form').action = '{{ url_for("dashboard.edit_other") }}';
+                document.getElementById('item-id').value = data.id;
+                document.getElementById('item-title').value = data.title;
+                document.getElementById('item-date').value = data.achieved_date || '';
+                document.getElementById('item-description').value = data.description || '';
+                document.getElementById('item-youtube').value = data.youtube_url || '';
+
+                // Clear and populate links
+                document.getElementById('item-links-container').innerHTML = '';
+                itemLinkCounter = 0;
+                if (data.links && data.links.length > 0) {
+                    data.links.forEach(link => {
+                        addItemProofLink(link.label, link.url);
+                    });
+                }
+
+                document.getElementById('item-modal').style.display = 'flex';
+            });
+    }
+
+    function deleteItem(itemId) {
+        if (!confirm('Are you sure you want to delete this achievement?')) return;
+
+        fetch(`/dashboard/others/${itemId}/delete`, { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error deleting achievement');
+                }
+            });
+    }
+
+    // Close modal on ESC
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            closeItemModal();
+        }
+    });
+</script>
+{% endblock %}

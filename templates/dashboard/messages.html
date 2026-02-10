@@ -1,0 +1,118 @@
+{% extends "dashboard/base_dashboard.html" %}
+
+{% block title %}Messages - Dashboard{% endblock %}
+
+{% block dashboard_content %}
+<h1 style="margin-bottom: var(--space-md);">Messages Inbox</h1>
+
+<!-- Messages Table -->
+<div class="card">
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="border-bottom: 2px solid var(--border-color);">
+                <th style="text-align: left; padding: 12px;">From</th>
+                <th style="text-align: left; padding: 12px;">Subject</th>
+                <th style="text-align: left; padding: 12px;">Date</th>
+                <th style="text-align: center; padding: 12px;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for message in messages %}
+            <tr
+                style="border-bottom: 1px solid var(--border-color); {% if not message.is_read %}background: #fffef0;{% endif %}">
+                <td style="padding: 12px;">
+                    <strong>{{message.name}}</strong><br>
+                    <small style="color: var(--text-muted);">{{message.email}}</small>
+                </td>
+                <td style="padding: 12px;">
+                    <strong>{{message.subject}}</strong><br>
+                    <small style="color: var(--text-secondary);">{{message.message[:80]}}{% if message.message|length
+                        > 80 %}...{% endif %}</small>
+                </td>
+                <td style="padding: 12px;">
+                    <small>{{message.created_at.strftime('%b %d, %Y')}}</small>
+                </td>
+                <td style="padding: 12px; text-align: center;">
+                    <button class="btn btn-small btn-outline" onclick="viewMessage({{message.id}})">View</button>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4" style="text-align: center; padding: var(--space-xl); color: var(--text-muted);">
+                    No messages yet
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Message Detail Modal -->
+<div class="modal-overlay" id="message-modal" style="display: none;" onclick="closeMessageModal()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <h2 id="message-subject"></h2>
+        <div
+            style="margin: var(--space-md) 0; padding: var(--space-md) 0; border-bottom: 1px solid var(--border-color);">
+            <p><strong>From:</strong> <span id="message-from-name"></span></p>
+            <p><strong>Email:</strong> <span id="message-from-email"></span></p>
+            <p id="message-phone-container" style="display: none;"><strong>Phone:</strong> <span
+                    id="message-from-phone"></span></p>
+            <p><strong>Date:</strong> <span id="message-date"></span></p>
+        </div>
+        <div id="message-body" style="white-space: pre-wrap; line-height: 1.6; margin: var(--space-md) 0;">
+        </div>
+        <button class="btn btn-outline btn-block" onclick="closeMessageModal()">Close</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const messagesData = {
+    {% for message in messages %}
+    {{message.id}}: {
+        subject: {{message.subject | tojson}},
+        senderName: {{message.name | tojson}},
+        senderEmail: {{message.email | tojson}},
+        senderPhone: {{(message.phone or '') | tojson}},
+        message: {{message.message | tojson}},
+        createdAt: {{message.created_at.strftime('%B %d, %Y at %I:%M %p') | tojson}}
+    } {% if not loop.last %}, {% endif %}
+    {% endfor %}
+};
+
+    function viewMessage(messageId) {
+        const msg = messagesData[messageId];
+        if (!msg) return;
+
+        document.getElementById('message-subject').textContent = msg.subject;
+        document.getElementById('message-from-name').textContent = msg.senderName;
+        document.getElementById('message-from-email').textContent = msg.senderEmail;
+
+        if (msg.senderPhone) {
+            document.getElementById('message-from-phone').textContent = msg.senderPhone;
+            document.getElementById('message-phone-container').style.display = 'block';
+        } else {
+            document.getElementById('message-phone-container').style.display = 'none';
+        }
+
+        document.getElementById('message-date').textContent = msg.createdAt;
+        document.getElementById('message-body').textContent = msg.message;
+
+        document.getElementById('message-modal').style.display = 'flex';
+
+        // Mark as read
+        fetch(`/dashboard/messages/${messageId}/read`, { method: 'POST' });
+    }
+
+    function closeMessageModal() {
+        document.getElementById('message-modal').style.display = 'none';
+    }
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            closeMessageModal();
+        }
+    });
+</script>
+{% endblock %}

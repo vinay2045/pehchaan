@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Pehchaan{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container">
+        <div style="max-width: 500px; margin: 0 auto;">
+            <!-- Header -->
+            <div class="text-center mb-xl">
+                <h1 style="margin-bottom: 12px;">Welcome Back</h1>
+                <p style="color: var(--text-secondary);">Login to your Pehchaan</p>
+            </div>
+
+            <!-- Login Form -->
+            <form method="POST" action="{{ url_for('auth.login') }}" class="card card-lg">
+                {{ form.hidden_tag() }}
+
+                <div class="form-group">
+                    {{ form.email_or_username.label }}
+                    {{ form.email_or_username(class="form-control", placeholder="Email or username", autofocus=true) }}
+                    {% if form.email_or_username.errors %}
+                    {% for error in form.email_or_username.errors %}
+                    <small style="color: #CC0000;">{{ error }}</small>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.password.label }}
+                    {{ form.password(class="form-control", placeholder="Enter your password") }}
+                    {% if form.password.errors %}
+                    {% for error in form.password.errors %}
+                    <small style="color: #CC0000;">{{ error }}</small>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block btn-large">
+                    Login
+                </button>
+            </form>
+
+            <!-- Signup Link -->
+            <div class="text-center mt-md">
+                <p>Don't have an account? <a href="{{ url_for('auth.signup') }}">Sign up</a></p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

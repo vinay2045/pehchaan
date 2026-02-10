@@ -1,0 +1,340 @@
+{% extends "base.html" %}
+
+{% block title %}Sign Up - Pehchaan{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container">
+        <div class="container-narrow">
+            <!-- Header -->
+            <div class="text-center mb-xl">
+                <h1 style="margin-bottom: 12px;">Create Your Pehchaan</h1>
+                <p style="color: var(--text-secondary);">Join thousands creating their online identity</p>
+            </div>
+
+            <!-- Role Tabs -->
+            <div style="display: flex; justify-content: center; gap: 16px; margin-bottom: 32px;">
+                <button class="btn btn-outline tab-btn active" data-tab="individual">
+                    Individual
+                </button>
+                <button class="btn btn-outline tab-btn" data-tab="business">
+                    Business
+                </button>
+            </div>
+
+            <!-- Individual Signup Form -->
+            <div id="individual-form" class="tab-content active">
+                <form method="POST" action="{{ url_for('auth.signup') }}" class="card card-lg">
+                    {{ individual_form.hidden_tag() }}
+                    <input type="hidden" name="role" value="individual">
+
+                    <div class="form-group">
+                        {{ individual_form.email.label }}
+                        {{ individual_form.email(class="form-control", placeholder="your.email@example.com") }}
+                        {% if individual_form.email.errors %}
+                        {% for error in individual_form.email.errors %}
+                        <small style="color: #CC0000;">{{ error }}</small>
+                        {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        {{ individual_form.username.label }}
+                        {{ individual_form.username(class="form-control", id="username-input", placeholder="yourname")
+                        }}
+                        <div id="username-preview" style="margin-top: 8px; font-size: 14px; color: var(--text-muted);">
+                            pehchaan.com/<span id="username-slug">yourname</span>
+                        </div>
+                        <div id="username-status" style="margin-top: 4px; font-size: 14px;"></div>
+                        {% if individual_form.username.errors %}
+                        {% for error in individual_form.username.errors %}
+                        <small style="color: #CC0000;">{{ error }}</small>
+                        {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        {{ individual_form.phone.label }}
+                        {{ individual_form.phone(class="form-control", placeholder="+91 98765 43210") }}
+                        {% if individual_form.phone.errors %}
+                        {% for error in individual_form.phone.errors %}
+                        <small style="color: #CC0000;">{{ error }}</small>
+                        {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        {{ individual_form.password.label }}
+                        {{ individual_form.password(class="form-control", placeholder="Min 8 characters") }}
+                        {% if individual_form.password.errors %}
+                        {% for error in individual_form.password.errors %}
+                        <small style="color: #CC0000;">{{ error }}</small>
+                        {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block btn-large">
+                        Create Account
+                    </button>
+                </form>
+            </div>
+
+            <!-- Business Signup Form -->
+            <div id="business-form" class="tab-content" style="display: none;">
+                <form method="POST" action="{{ url_for('auth.signup') }}" class="card card-lg">
+                    {{ business_form.hidden_tag() }}
+                    <input type="hidden" name="role" value="business">
+
+                    <div class="form-group">
+                        {{ business_form.email.label }}
+                        {{ business_form.email(class="form-control", placeholder="business@example.com or +91 98765
+                        43210") }}
+                        {% if business_form.email.errors %}
+                        {% for error in business_form.email.errors %}
+                        <small style="color: #CC0000;">{{ error }}</small>
+                        {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        {{ business_form.username.label }}
+                        {{ business_form.username(class="form-control", id="business-username-input",
+                        placeholder="your-business-name") }}
+                        <div id="business-username-preview"
+                            style="margin-top: 8px; font-size: 14px; color: var(--text-muted);">
+                            pehchaan.com/<span id="business-username-slug">your-business-name</span>
+                        </div>
+                        <div id="business-username-status" style="margin-top: 4px; font-size: 14px;"></div>
+                        {% if business_form.username.errors %}
+                        {% for error in business_form.username.errors %}
+                        <small style="color: #CC0000;">{{ error }}</small>
+                        {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        {{ business_form.business_category.label }}
+                        {{ business_form.business_category(class="form-control") }}
+                        {% if business_form.business_category.errors %}
+                        {% for error in business_form.business_category.errors %}
+                        <small style="color: #CC0000;">{{ error }}</small>
+                        {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        {{ business_form.country.label }}
+                        {{ business_form.country(class="form-control") }}
+                        {% if business_form.country.errors %}
+                        {% for error in business_form.country.errors %}
+                        <small style="color: #CC0000;">{{ error }}</small>
+                        {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        {{ business_form.state.label }}
+                        {{ business_form.state(class="form-control", id="state-select") }}
+                        {% if business_form.state.errors %}
+                        {% for error in business_form.state.errors %}
+                        <small style="color: #CC0000;">{{ error }}</small>
+                        {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        {{ business_form.district.label }}
+                        {{ business_form.district(class="form-control", id="district-select") }}
+                        {% if business_form.district.errors %}
+                        {% for error in business_form.district.errors %}
+                        <small style="color: #CC0000;">{{ error }}</small>
+                        {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        {{ business_form.password.label }}
+                        {{ business_form.password(class="form-control", placeholder="Min 8 characters") }}
+                        {% if business_form.password.errors %}
+                        {% for error in business_form.password.errors %}
+                        <small style="color: #CC0000;">{{ error }}</small>
+                        {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block btn-large">
+                        Create Business Account
+                    </button>
+                </form>
+            </div>
+
+            <!-- Login Link -->
+            <div class="text-center mt-md">
+                <p>Already have an account? <a href="{{ url_for('auth.login') }}">Login</a></p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Tab switching
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const individualForm = document.getElementById('individual-form');
+    const businessForm = document.getElementById('business-form');
+
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tab = btn.dataset.tab;
+
+            // Update active tab button
+            tabBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            // Show correct form
+            if (tab === 'individual') {
+                individualForm.style.display = 'block';
+                businessForm.style.display = 'none';
+            } else {
+                individualForm.style.display = 'none';
+                businessForm.style.display = 'block';
+            }
+        });
+    });
+
+    // Real-time username validation for Individual
+    const usernameInput = document.getElementById('username-input');
+    const usernameSlug = document.getElementById('username-slug');
+    const usernameStatus = document.getElementById('username-status');
+    let usernameTimeout;
+
+    if (usernameInput) {
+        usernameInput.addEventListener('input', function () {
+            clearTimeout(usernameTimeout);
+            const username = this.value;
+
+            if (!username) {
+                usernameSlug.textContent = 'yourname';
+                usernameStatus.innerHTML = '';
+                return;
+            }
+
+            // Show loading
+            usernameStatus.innerHTML = '<span style="color: #999;">Checking...</span>';
+
+            usernameTimeout = setTimeout(() => {
+                fetch(`/check-username?username=${encodeURIComponent(username)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        usernameSlug.textContent = data.slugified || username;
+
+                        if (data.available) {
+                            usernameStatus.innerHTML = '<span style="color: green;">✓ Available</span>';
+                        } else {
+                            usernameStatus.innerHTML = '<span style="color: red;">✕ ' + data.message + '</span>';
+                        }
+                    })
+                    .catch(err => {
+                        usernameStatus.innerHTML = '<span style="color: red;">Error checking availability</span>';
+                    });
+            }, 500);
+        });
+    }
+
+    // Real-time username validation for Business
+    const businessUsernameInput = document.getElementById('business-username-input');
+    const businessUsernameSlug = document.getElementById('business-username-slug');
+    const businessUsernameStatus = document.getElementById('business-username-status');
+    let businessUsernameTimeout;
+
+    if (businessUsernameInput) {
+        businessUsernameInput.addEventListener('input', function () {
+            clearTimeout(businessUsernameTimeout);
+            const username = this.value;
+
+            if (!username) {
+                businessUsernameSlug.textContent = 'your-business-name';
+                businessUsernameStatus.innerHTML = '';
+                return;
+            }
+
+            businessUsernameStatus.innerHTML = '<span style="color: #999;">Checking...</span>';
+
+            businessUsernameTimeout = setTimeout(() => {
+                fetch(`/check-username?username=${encodeURIComponent(username)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        businessUsernameSlug.textContent = data.slugified || username;
+
+                        if (data.available) {
+                            businessUsernameStatus.innerHTML = '<span style="color: green;">✓ Available</span>';
+                        } else {
+                            businessUsernameStatus.innerHTML = '<span style="color: red;">✕ ' + data.message + '</span>';
+                        }
+                    })
+                    .catch(err => {
+                        businessUsernameStatus.innerHTML = '<span style="color: red;">Error checking availability</span>';
+                    });
+            }, 500);
+        });
+    }
+
+    // Preserve active tab on page load
+    const urlParams = new URLSearchParams(window.location.search);
+    const activeTab = urlParams.get('tab') || '{{ active_tab }}';
+    if (activeTab === 'business') {
+        document.querySelector('[data-tab="business"]').click();
+    }
+
+    // Dynamic State/District Loading for Business Form
+    const stateSelect = document.getElementById('state-select');
+    const districtSelect = document.getElementById('district-select');
+
+    if (stateSelect && districtSelect) {
+        // Load states when page loads
+        fetch('/api/states')
+            .then(res => res.json())
+            .then(data => {
+                if (data.states) {
+                    // Clear existing options except the first one
+                    stateSelect.innerHTML = '<option value="">Select State</option>';
+
+                    // Add state options
+                    data.states.forEach(state => {
+                        const option = document.createElement('option');
+                        option.value = state;
+                        option.textContent = state;
+                        stateSelect.appendChild(option);
+                    });
+                }
+            })
+            .catch(err => console.error('Error loading states:', err));
+
+        // Load districts when state changes
+        stateSelect.addEventListener('change', function () {
+            const selectedState = this.value;
+
+            // Clear district dropdown
+            districtSelect.innerHTML = '<option value="">Select District</option>';
+
+            if (!selectedState) return;
+
+            // Load districts for selected state
+            fetch(`/api/districts?state=${encodeURIComponent(selectedState)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.districts) {
+                        data.districts.forEach(district => {
+                            const option = document.createElement('option');
+                            option.value = district;
+                            option.textContent = district;
+                            districtSelect.appendChild(option);
+                        });
+                    }
+                })
+                .catch(err => console.error('Error loading districts:', err));
+        });
+    }
+</script>
+{% endblock %}

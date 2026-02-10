@@ -1,0 +1,379 @@
+{% extends "dashboard/base_dashboard.html" %}
+
+{% block title %}Edit Profile - Dashboard{% endblock %}
+
+{% block dashboard_content %}
+<h1 style="margin-bottom: var(--space-md);">Edit Profile</h1>
+
+<form method="POST" action="{{ url_for('dashboard.profile') }}" enctype="multipart/form-data" class="card card-lg">
+    {{ form.hidden_tag() }}
+
+    <!-- Profile & Banner Images -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); margin-bottom: var(--space-md);">
+        <!-- Profile Image -->
+        <div>
+            <label class="form-label">Profile Image</label>
+            <div style="text-align: center;">
+                {% if current_user.profile_image %}
+                <img id="profile-preview"
+                    src="{{ url_for('static', filename='uploads/' + current_user.profile_image) }}"
+                    style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color); margin-bottom: 12px;">
+                {% else %}
+                <img id="profile-preview" src="https://via.placeholder.com/150"
+                    style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color); margin-bottom: 12px;">
+                {% endif %}
+                <div>
+                    <label for="profile-image-input" class="btn btn-outline btn-small" style="cursor: pointer;">
+                        Choose Image
+                    </label>
+                    {{ form.profile_image(id="profile-image-input", style="display: none;") }}
+                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">JPG or PNG, max 5MB</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Banner Image -->
+        <div>
+            <label class="form-label">Banner Image</label>
+            <div style="text-align: center;">
+                {% if current_user.banner_image %}
+                <img id="banner-preview" src="{{ url_for('static', filename='uploads/' + current_user.banner_image) }}"
+                    style="width: 100%; height: 150px; border-radius: 8px; object-fit: cover; border: 2px solid var(--border-color); margin-bottom: 12px;">
+                {% else %}
+                <div id="banner-preview"
+                    style="width: 100%; height: 150px; border-radius: 8px; background: linear-gradient(135deg, var(--yellow) 0%, var(--green) 100%); border: 2px solid var(--border-color); margin-bottom: 12px; display: flex; align-items: center; justify-content: center; color: var(--text-secondary);">
+                    No banner image
+                </div>
+                {% endif %}
+                <div>
+                    <label for="banner-image-input" class="btn btn-outline btn-small" style="cursor: pointer;">
+                        Choose Banner
+                    </label>
+                    {{ form.banner_image(id="banner-image-input", style="display: none;") }}
+                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">JPG or PNG, max 5MB</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resume Upload -->
+    <div class="form-group">
+        <label class="form-label">Resume (PDF)</label>
+        <div style="display: flex; align-items: center; gap: 12px;">
+            {% if current_user.resume_pdf %}
+            <span style="color: var(--text-secondary); font-size: 14px;"><span id="resume-filename">📄 {{ current_user.resume_pdf.split('/')[-1].split('_', 1)[-1] if '_' in current_user.resume_pdf.split('/')[-1] else current_user.resume_pdf.split('/')[-1] }}</span></span>
+            {% else %}
+            <span style="color: var(--text-muted); font-size: 14px;">No resume uploaded</span>
+            {% endif %}
+            <label for="resume-input" class="btn btn-outline btn-small" style="cursor: pointer;">
+                {% if current_user.resume_pdf %}Replace{% else %}Upload{% endif %} Resume
+            </label>
+            {{ form.resume(id="resume-input", style="display: none;") }}
+        </div>
+        <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">PDF only, max 10MB</p>
+    </div>
+
+    <hr style="border: none; border-top: 1px solid var(--border-color); margin: var(--space-md) 0;">
+
+    <div class="form-group">
+        {{ form.full_name.label }}
+        {{ form.full_name(class="form-control") }}
+    </div>
+
+    <div class="form-group">
+        {{ form.username.label }}
+        {{ form.username(class="form-control", id="profile-username-input") }}
+        <div id="profile-username-preview" style="margin-top: 8px; font-size: 14px; color: var(--text-muted);">
+            pehchaan.com/<span id="profile-username-slug">{{ current_user.username }}</span>
+        </div>
+    </div>
+
+    <div class="form-group">
+        {{ form.profile_tag.label }}
+        {{ form.profile_tag(class="form-control", placeholder="e.g., UI/UX Designer, Sweet Shop Owner") }}
+    </div>
+
+    <div class="form-group">
+        {{ form.tagline.label }}
+        {{ form.tagline(class="form-control", placeholder="A short, catchy tagline") }}
+    </div>
+
+    {% if current_user.role == 'individual' %}
+    <!-- Skills Section (Individual Only) -->
+    <div class="form-group">
+        <label class="form-label">Skills</label>
+        <div id="skills-container" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
+            {% for skill in current_user.skills %}
+            <span class="pill pill-yellow" style="display: inline-flex; align-items: center; gap: 8px;">
+                {{ skill.name }}
+                <button type="button" onclick="removeSkillElem(this)"
+                    style="background: none; border: none; cursor: pointer; font-size: 16px; line-height: 1; padding: 0; color: inherit;">&times;</button>
+            </span>
+            {% endfor %}
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <input type="text" id="skill-input" class="form-control" placeholder="Add a skill (press Enter)"
+                onkeypress="if(event.key==='Enter'){addSkill(event)}">
+            <button type="button" class="btn btn-outline" onclick="addSkill(event)">Add</button>
+        </div>
+        <input type="hidden" name="skills" id="skills-hidden" value="">
+    </div>
+
+    <!-- Social Links Section (Individual Only) -->
+    <div class="form-group">
+        <label class="form-label">Social Links</label>
+        <div id="social-links-container">
+            {% for link in current_user.social_links %}
+            <div class="social-link-row" style="display: flex; gap: 12px; margin-bottom: 12px; align-items: center;">
+                <select class="form-control" style="flex: 0 0 150px;" name="social_platform_{{ loop.index0 }}">
+                    <option value="twitter" {% if link.platform=='twitter' %}selected{% endif %}>Twitter</option>
+                    <option value="linkedin" {% if link.platform=='linkedin' %}selected{% endif %}>LinkedIn</option>
+                    <option value="github" {% if link.platform=='github' %}selected{% endif %}>GitHub</option>
+                    <option value="instagram" {% if link.platform=='instagram' %}selected{% endif %}>Instagram</option>
+                    <option value="facebook" {% if link.platform=='facebook' %}selected{% endif %}>Facebook</option>
+                    <option value="youtube" {% if link.platform=='youtube' %}selected{% endif %}>YouTube</option>
+                    <option value="website" {% if link.platform=='website' %}selected{% endif %}>Website</option>
+                </select>
+                <input type="text" class="form-control" name="social_url_{{ loop.index0 }}" placeholder="https://..."
+                    value="{{ link.url }}">
+                <button type="button" class="btn btn-outline btn-small"
+                    onclick="removeSocialLinkElem(this)">&times;</button>
+            </div>
+            {% endfor %}
+        </div>
+        <button type="button" class="btn btn-outline btn-small" onclick="addSocialLink()">+ Add Social Link</button>
+    </div>
+    {%endif %}
+
+    <div class="form-group">
+        {{ form.bio.label }}
+        {{ form.bio(class="form-control", rows="5", placeholder="Tell people about yourself...") }}
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-large">
+        Save Changes
+    </button>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Real-time username validation
+    const profileUsernameInput = document.getElementById('profile-username-input');
+    const profileUsernameSlug = document.getElementById('profile-username-slug');
+    let profileUsernameTimeout;
+
+    if (profileUsernameInput) {
+        profileUsernameInput.addEventListener('input', function () {
+            clearTimeout(profileUsernameTimeout);
+            const username = this.value;
+
+            if (!username) {
+                profileUsernameSlug.textContent = '{{ current_user.username }}';
+                return;
+            }
+
+            profileUsernameTimeout = setTimeout(() => {
+                fetch(`/check-username?username=${encodeURIComponent(username)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        profileUsernameSlug.textContent = data.slugified || username;
+                    });
+            }, 300);
+        });
+    }
+
+    // Profile image preview
+    const profileImageInput = document.getElementById('profile-image-input');
+    const profilePreview = document.getElementById('profile-preview');
+
+    if (profileImageInput) {
+        profileImageInput.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    profilePreview.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    // Banner image preview
+    const bannerImageInput = document.getElementById('banner-image-input');
+    let bannerPreview = document.getElementById('banner-preview');
+
+    if (bannerImageInput) {
+        bannerImageInput.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    // If banner-preview is a div, replace it with an img
+                    if (bannerPreview.tagName === 'DIV') {
+                        const newImg = document.createElement('img');
+                        newImg.id = 'banner-preview';
+                        newImg.style.cssText = 'width: 100%; height: 150px; border-radius: 8px; object-fit: cover; border: 2px solid var(--border-color); margin-bottom: 12px;';
+                        newImg.src = e.target.result;
+                        bannerPreview.parentNode.replaceChild(newImg, bannerPreview);
+                        bannerPreview = newImg;
+                    } else {
+                        bannerPreview.src = e.target.result;
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    // Skills Management
+    function addSkill(e) {
+        e.preventDefault();
+        const input = document.getElementById('skill-input');
+        const skill = input.value.trim();
+
+        if (!skill) return;
+
+        const container = document.getElementById('skills-container');
+        const skillPill = document.createElement('span');
+        skillPill.className = 'pill pill-yellow';
+        skillPill.style.cssText = 'display: inline-flex; align-items: center; gap: 8px;';
+        skillPill.innerHTML = `${skill} <button type="button" onclick="removeSkillElem(this)" style="background: none; border: none; cursor: pointer; font-size: 16px; line-height: 1; padding: 0; color: inherit;">&times;</button>`;
+        container.appendChild(skillPill);
+        input.value = '';
+        updateSkillsHidden();
+    }
+
+    function removeSkillElem(btn) {
+        btn.parentElement.remove();
+        updateSkillsHidden();
+    }
+
+    function updateSkillsHidden() {
+        const skills = Array.from(document.querySelectorAll('#skills-container .pill')).map(el => {
+            const text = el.textContent.trim();
+            return text.replace('×', '').trim();
+        });
+        document.getElementById('skills-hidden').value = skills.join(',');
+    }
+
+    // Initialize skills hidden field
+    updateSkillsHidden();
+
+    // Social Links Management
+    let socialLinkCounter = {{ current_user.social_links| length }};
+
+    function addSocialLink() {
+        const container = document.getElementById('social-links-container');
+        const newRow = document.createElement('div');
+        newRow.className = 'social-link-row';
+        newRow.style.cssText = 'display: flex; gap: 12px; margin-bottom: 12px; align-items: center;';
+        newRow.innerHTML = `
+            <select class="form-control" style="flex: 0 0 150px;" name="social_platform_${socialLinkCounter}">
+                <option value="twitter">Twitter</option>
+                <option value="linkedin">LinkedIn</option>
+                <option value="github">GitHub</option>
+                <option value="instagram">Instagram</option>
+                <option value="facebook">Facebook</option>
+                <option value="youtube">YouTube</option>
+                <option value="website">Website</option>
+            </select>
+            <input type="text" class="form-control" name="social_url_${socialLinkCounter}" placeholder="https://...">
+            <button type="button" class="btn btn-outline btn-small" onclick="removeSocialLinkElem(this)">&times;</button>
+        `;
+        container.appendChild(newRow);
+        socialLinkCounter++;
+    }
+
+    function removeSocialLinkElem(btn) {
+        btn.parentElement.remove();
+    }
+
+    // Resume file preview
+    const resumeInput = document.getElementById('resume-input');
+    const resumeFilename = document.getElementById('resume-filename');
+    
+    if (resumeInput) {
+        resumeInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file && file.type === 'application/pdf') {
+                if (resumeFilename) {
+                    resumeFilename.textContent = '📄 ' + file.name;
+                } else {
+                    // If no existing resume, create the span
+                    const displayArea = resumeInput.previousElementSibling.previousElementSibling;
+                    if (displayArea) {
+                        displayArea.innerHTML = '<span id="resume-filename">📄 ' + file.name + '</span>';
+                        displayArea.style.color = 'var(--text-secondary)';
+                    }
+                }
+            }
+        });
+    }
+
+
+    // Username availability check
+    const usernameInput = document.getElementById('profile-username-input');
+    const usernameSlug = document.getElementById('profile-username-slug');
+    let checkTimeout;
+
+    if (usernameInput) {
+        usernameInput.addEventListener('input', function(e) {
+            clearTimeout(checkTimeout);
+            const username = e.target.value.trim();
+            
+            // Update preview immediately
+            if (usernameSlug) {
+                usernameSlug.textContent = username || '{{ current_user.username }}';
+            }
+
+            if (!username) {
+                removeUsernameFeedback();
+                return;
+            }
+
+            // Debounce the API call
+            checkTimeout = setTimeout(() => {
+                fetch(`/api/check-username?username=${encodeURIComponent(username)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        showUsernameFeedback(data.available, data.message, data.is_current);
+                    })
+                    .catch(err => {
+                        console.error('Username check failed:', err);
+                    });
+            }, 500);
+        });
+    }
+
+    function showUsernameFeedback(available, message, isCurrent) {
+        removeUsernameFeedback();
+        
+        const feedback = document.createElement('div');
+        feedback.id = 'username-feedback';
+        feedback.style.cssText = 'margin-top: 8px; font-size: 14px; padding: 8px 12px; border-radius: 8px; display: flex; align-items: center; gap: 8px;';
+        
+        if (available) {
+            feedback.style.backgroundColor = isCurrent ? '#fff3cd' : '#d1e7dd';
+            feedback.style.color = isCurrent ? '#856404' : '#0f5132';
+            feedback.innerHTML = `<span>${isCurrent ? '✓' : '✔'}</span> ${message}`;
+        } else {
+            feedback.style.backgroundColor = '#f8d7da';
+            feedback.style.color = '#842029';
+            feedback.innerHTML = `<span>✗</span> ${message}`;
+        }
+        
+        usernameInput.parentElement.appendChild(feedback);
+    }
+
+    function removeUsernameFeedback() {
+        const existing = document.getElementById('username-feedback');
+        if (existing) {
+            existing.remove();
+        }
+    }
+
+
+</script>
+{% endblock %}

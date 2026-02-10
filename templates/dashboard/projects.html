@@ -1,0 +1,194 @@
+{% extends "dashboard/base_dashboard.html" %}
+
+{% block title %}Projects - Dashboard{% endblock %}
+
+{% block dashboard_content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-md);">
+    <h1>Manage Projects</h1>
+    <button class="btn btn-primary" onclick="openAddProjectModal()">+ Add Project</button>
+</div>
+
+<!-- Projects List -->
+<div id="projects-container" class="bento-grid">
+    {% for project in projects %}
+    <div class="card" data-project-id="{{ project.id }}">
+        <!-- Media Display (Images or YouTube) -->
+        {% if project.youtube_id %}
+        <div style="margin-bottom: 12px; border-radius: 8px; overflow: hidden; aspect-ratio: 16/9;">
+            <iframe width="100%" height="100%" src="https://www.youtube.com/embed/{{ project.youtube_id }}"
+                frameborder="0" allowfullscreen></iframe>
+        </div>
+        {% endif %}
+
+        {% if project.images and project.images|length > 0 %}
+        <div style="display: flex; gap: 8px; overflow-x: auto; margin-bottom: 12px; padding-bottom: 4px;">
+            {% for img in project.images %}
+            <img src="{{ url_for('static', filename='uploads/' + img.image_path) }}"
+                style="height: 120px; min-width: 160px; object-fit: cover; border-radius: 8px;">
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <h3>{{ project.title }}</h3>
+
+        {% if project.technologies %}
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0;">
+            {% for tech in project.technologies.split(',') %}
+            <span class="pill" style="font-size: 12px;">{{ tech.strip() }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <p style="color: var(--text-muted); margin: 12px 0; white-space: pre-wrap;">{{ project.description }}</p>
+
+        {% if project.live_demo_url or project.github_url or project.links %}
+        <!-- Links Display -->
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0;">
+            {% if project.live_demo_url %}
+            <a href="{{ project.live_demo_url }}" target="_blank" class="btn btn-outline btn-small"
+                style="font-size: 11px; padding: 4px 10px;">
+                🚀 Live Demo
+            </a>
+            {% endif %}
+
+            {% if project.github_url %}
+            <a href="{{ project.github_url }}" target="_blank" class="btn btn-outline btn-small"
+                style="font-size: 11px; padding: 4px 10px;">
+                💻 GitHub
+            </a>
+            {% endif %}
+
+            {% if project.links %}
+            {% for link in project.links %}
+            <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-small"
+                style="font-size: 11px; padding: 4px 10px;">
+                🔗 {{ link.label }}
+            </a>
+            {% endfor %}
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <div style="display: flex; gap: 12px; margin-top: 16px;">
+            <button class="btn btn-small btn-outline" onclick="editProject({{ project.id }})">Edit</button>
+            <button class="btn btn-small btn-outline" style="color: #dc3545;"
+                onclick="deleteProject({{ project.id }})">Delete</button>
+        </div>
+    </div>
+    {% else %}
+    <div class="card" style="text-align: center; padding: var(--space-xl); grid-column: 1 / -1;">
+        <p style="color: var(--text-muted);">No projects yet. Click "Add Project" to get started!</p>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Add/Edit Project Modal -->
+<div class="modal-overlay" id="project-modal" style="display: none;" onclick="closeProjectModal()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <h2 id="modal-title">Add Project</h2>
+        <form method="POST" action="{{ url_for('dashboard.add_project') }}" enctype="multipart/form-data"
+            id="project-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="project_id" id="project-id">
+
+            <div class="form-group">
+                <label class="form-label">Title</label>
+                <input type="text" name="title" id="project-title" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea name="description" id="project-description" class="form-control" rows="4"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Demo URL (Optional)</label>
+                <input type="url" name="demo_url" id="project-demo-url" class="form-control" placeholder="https://...">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">GitHub URL (Optional)</label>
+                <input type="url" name="github_url" id="project-github-url" class="form-control"
+                    placeholder="https://github.com/...">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">YouTube URL (Optional)</label>
+                <input type="url" name="youtube_url" id="project-youtube-url" class="form-control"
+                    placeholder="https://youtube.com/...">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Technologies (comma-separated)</label>
+                <input type="text" name="technologies" id="project-technologies" class="form-control"
+                    placeholder="React, Node.js, MongoDB">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Project Images (max 10)</label>
+                <input type="file" name="images" id="project-images" class="form-control" accept="image/*" multiple>
+                <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">Select up to 10 images</p>
+            </div>
+
+            <div style="display: flex; gap: 12px; margin-top: var(--space-md);">
+                <button type="submit" class="btn btn-primary">Save Project</button>
+                <button type="button" class="btn btn-outline" onclick="closeProjectModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function openAddProjectModal() {
+        document.getElementById('modal-title').textContent = 'Add Project';
+        document.getElementById('project-form').action = '{{ url_for("dashboard.add_project") }}';
+        document.getElementById('project-form').reset();
+        document.getElementById('project-id').value = '';
+        document.getElementById('project-modal').style.display = 'flex';
+    }
+
+    function closeProjectModal() {
+        document.getElementById('project-modal').style.display = 'none';
+    }
+
+    function editProject(projectId) {
+        fetch(`/dashboard/projects/${projectId}`)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('modal-title').textContent = 'Edit Project';
+                document.getElementById('project-form').action = '{{ url_for("dashboard.edit_project") }}';
+                document.getElementById('project-id').value = data.id;
+                document.getElementById('project-title').value = data.title;
+                document.getElementById('project-description').value = data.description || '';
+                document.getElementById('project-demo-url').value = data.demo_url || '';
+                document.getElementById('project-github-url').value = data.github_url || '';
+                document.getElementById('project-youtube-url').value = data.youtube_url || '';
+                document.getElementById('project-technologies').value = data.technologies || '';
+                document.getElementById('project-modal').style.display = 'flex';
+            });
+    }
+
+    function deleteProject(projectId) {
+        if (!confirm('Are you sure you want to delete this project?')) return;
+
+        fetch(`/dashboard/projects/${projectId}/delete`, { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error deleting project');
+                }
+            });
+    }
+
+    // Close modal on ESC
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            closeProjectModal();
+        }
+    });
+</script>
+{% endblock %}

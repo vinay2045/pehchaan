@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Pehchaan{% endblock %}
+
+{% block content %}
+<div style="display: flex; min-height: 100vh;">
+    <!-- Sidebar -->
+    <aside
+        style="width: 250px; background-color: var(--bg-card); border-right: 2px solid var(--border-color); padding: var(--space-lg);">
+        <div style="margin-bottom: var(--space-xl);">
+            <a href="{{ url_for('main.index') }}" style="font-size: var(--font-size-xl); font-weight: 600;">pehchaan</a>
+        </div>
+
+        <nav>
+            <ul style="list-style: none;">
+                <li style="margin-bottom: var(--space-sm);">
+                    <a href="{{ url_for('dashboard.profile') }}" class="nav-link"
+                        style="display: block; padding: var(--space-xs);">Profile</a>
+                </li>
+
+                {% if current_user.role == 'individual' %}
+                <li style="margin-bottom: var(--space-sm);">
+                    <a href="{{ url_for('dashboard.projects') }}" class="nav-link"
+                        style="display: block; padding: var(--space-xs);">Projects</a>
+                </li>
+                <li style="margin-bottom: var(--space-sm);">
+                    <a href="{{ url_for('dashboard.experience') }}" class="nav-link"
+                        style="display: block; padding: var(--space-xs);">Experience</a>
+                </li>
+                {% endif %}
+
+                {% if current_user.role == 'business' %}
+                <li style="margin-bottom: var(--space-sm);">
+                    <a href="{{ url_for('dashboard.services') }}" class="nav-link"
+                        style="display: block; padding: var(--space-xs);">Services</a>
+                </li>
+                <li style="margin-bottom: var(--space-sm);">
+                    <a href="{{ url_for('dashboard.previous_work') }}" class="nav-link"
+                        style="display: block; padding: var(--space-xs);">Previous Work</a>
+                </li>
+                {% endif %}
+
+                <li style="margin-bottom: var(--space-sm);">
+                    <a href="{{ url_for('dashboard.gallery') }}" class="nav-link"
+                        style="display: block; padding: var(--space-xs);">Gallery</a>
+                </li>
+                <li style="margin-bottom: var(--space-sm);">
+                    <a href="{{ url_for('dashboard.others') }}" class="nav-link"
+                        style="display: block; padding: var(--space-xs);">Others</a>
+                </li>
+                <li style="margin-bottom: var(--space-sm);">
+                    <a href="{{ url_for('dashboard.messages') }}" class="nav-link"
+                        style="display: block; padding: var(--space-xs);">Messages</a>
+                </li>
+                <li style="margin-bottom: var(--space-sm);">
+                    <a href="{{ url_for('profile.view_profile', username=current_user.username) }}" class="nav-link"
+                        style="display: block; padding: var(--space-xs);">View Profile</a>
+                </li>
+            </ul>
+        </nav>
+
+        <div style="margin-top: var(--space-xl);">
+            <a href="{{ url_for('static', filename='qr_codes/' + current_user.username + '.png') }}"
+                download="{{ current_user.username }}_qr.png" class="btn btn-yellow btn-small btn-block"
+                style="margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                📥 Download QR
+            </a>
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-outline btn-small btn-block">Logout</a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main style="flex: 1; padding: var(--space-lg);">
+        <div class="container-narrow">
+            {% block dashboard_content %}
+            <h1>Welcome, {{ current_user.full_name or current_user.username }}!</h1>
+            <p>Complete your profile to get started.</p>
+            <a href="{{ url_for('dashboard.profile') }}" class="btn btn-primary">Edit Profile</a>
+            {% endblock %}
+        </div>
+    </main>
+</div>
+{% endblock %}

@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+
+{% block title %}{{ user.full_name or user.username }} - Pehchaan{% endblock %}
+
+{% block content %}
+<!-- Banner Section -->
+<div
+    style="width: 100%; height: 300px; background: {% if user.banner_image %}url('{{ url_for('static', filename='uploads/' + user.banner_image) }}') center/cover{% else %}linear-gradient(135deg, var(--green) 0%, var(--yellow) 100%){% endif %}; position: relative;">
+</div>
+
+<!-- Profile Header -->
+<div class="container" style="margin-top: -80px; position: relative; z-index: 2;">
+    <div class="card" style="padding: var(--space-lg); margin-bottom: var(--space-lg);">
+        <div style="display: flex; align-items: flex-start; gap: var(--space-lg); flex-wrap: wrap;">
+            <!-- Profile Image -->
+            <div style="flex: 0 0 auto;">
+                {% if user.profile_image %}
+                <img src="{{ url_for('static', filename='uploads/' + user.profile_image) }}"
+                    style="width: 160px; height: 160px; border-radius: 50%; object-fit: cover; border: 4px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                {% else %}
+                <div
+                    style="width: 160px; height: 160px; border-radius: 50%; background: var(--green); border: 4px solid white; display: flex; align-items: center; justify-content: center; font-size: 48px; font-weight: bold;">
+                    {{ user.full_name[0] if user.full_name else user.username[0]|upper }}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Profile Info -->
+            <div style="flex: 1; min-width: 250px;">
+                <h1 style="margin: 0 0 8px 0;">{{ user.full_name or user.username }}</h1>
+                <p style="color: var(--text-secondary); margin: 0 0 12px 0;">@{{ user.username }}</p>
+
+                {% if user.business_category %}
+                <span class="pill pill-green" style="margin-bottom: 12px; display: inline-block;">{{
+                    user.business_category|replace('_', ' ')|title }}</span>
+                {% endif %}
+
+                {% if user.tagline %}
+                <p
+                    style="font-size: var(--font-size-lg); font-style: italic; margin: 12px 0; color: var(--text-secondary);">
+                    "{{ user.tagline }}"</p>
+                {% endif %}
+
+                {% if user.district and user.state %}
+                <p style="color: var(--text-secondary); margin: 8px 0;">
+                    📍 {{ user.district }}, {{ user.state }}, {{ user.country|capitalize }}
+                </p>
+                {% endif %}
+
+                <button class="btn btn-green" onclick="openShareModal()" style="margin-top: 12px;">
+                    Share Business
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bio Section -->
+{% if user.bio %}
+<section class="section">
+    <div class="container">
+        <div class="card">
+            <h2 style="margin-bottom: var(--space-md);">About Us</h2>
+            <p style="white-space: pre-wrap; line-height: 1.8;">{{ user.bio }}</p>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Services Section (Bento Grid) -->
+{% if user.services %}
+<section class="section">
+    <div class="container">
+        <h2 style="margin-bottom: var(--space-md);">Our Services</h2>
+        <div class="bento-grid">
+            {% for service in user.services %}
+            <div class="card">
+                {% if service.images %}
+                <img src="{{ url_for('static', filename='uploads/' + service.images[0].image_path) }}"
+                    style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px 8px 0 0; margin: -24px -24px 16px -24px;">
+                {% endif %}
+
+                <h3 style="margin-bottom: 12px;">{{ service.title }}</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 16px;">{{ service.description }}</p>
+
+                {% if service.price %}
+                <p style="font-size: var(--font-size-xl); font-weight: bold; color: var(--green);">₹{{ service.price }}
+                </p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Previous Work Section (Bento Grid) -->
+{% if user.previous_works %}
+<section class="section">
+    <div class="container">
+        <h2 style="margin-bottom: var(--space-md);">Our Work</h2>
+        <div class="bento-grid">
+            {% for work in user.previous_works %}
+            <div class="card">
+                {% if work.images %}
+                <img src="{{ url_for('static', filename='uploads/' + work.images[0].image_path) }}"
+                    style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px 8px 0 0; margin: -24px -24px 16px -24px;"
+                    onclick="openLightbox({{ loop.index0 }})">
+                {% endif %}
+
+                <h3 style="margin-bottom: 8px;">{{ work.title }}</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 12px;">{{ work.description }}</p>
+
+                {% if work.client %}
+                <p style="font-size: 14px; color: var(--text-muted);">Client: {{ work.client }}</p>
+                {% endif %}
+
+                {% if work.date %}
+                <span class="pill" style="font-size: 12px; margin-top: 8px; display: inline-block;">{{ work.date
+                    }}</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Gallery Section -->
+{% if user.gallery_images %}
+<section class="section">
+    <div class="container">
+        <h2 style="margin-bottom: var(--space-md);">Gallery</h2>
+        <div class="bento-grid">
+            {% for image in user.gallery_images %}
+            <div class="card" style="padding: 0; overflow: hidden; cursor: pointer;"
+                onclick="openLightbox({{ loop.index0 }})">
+                <img src="{{ url_for('static', filename='uploads/' + image.image_path) }}"
+                    style="width: 100%; height: 250px; object-fit: cover;">
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Social Links -->
+{% if user.social_links %}
+<section class="section">
+    <div class="container text-center">
+        <h2 style="margin-bottom: var(--space-md);">Connect With Us</h2>
+        <div style="display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;">
+            {% for link in user.social_links %}
+            <a href="{{ link.url }}" class="btn btn-outline" target="_blank" rel="noopener">
+                {{ link.platform|capitalize }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Contact Form -->
+<section class="section" style="background: var(--bg-card);">
+    <div class="container container-narrow">
+        <h2 class="text-center" style="margin-bottom: var(--space-md);">Get in Touch</h2>
+        <form method="POST" action="{{ url_for('profile.contact', username=user.username) }}" class="card">
+            <div class="form-group">
+                <label class="form-label">Name</label>
+                <input type="text" name="name" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" name="email" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Phone</label>
+                <input type="tel" name="phone" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Subject</label>
+                <input type="text" name="subject" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Message</label>
+                <textarea name="message" class="form-control" rows="5" required></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-large btn-block">
+                Send Message
+            </button>
+        </form>
+    </div>
+</section>
+
+<!-- Share Modal -->
+<div class="modal-overlay" id="share-modal"
+    style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 1000; display: flex; align-items: center; justify-content: center;"
+    onclick="closeShareModal()">
+    <div class="card" style="max-width: 500px; width: 90%; padding: var(--space-xl);" onclick="event.stopPropagation()">
+        <h2 style="margin-bottom: var(--space-md); text-align: center;">Share Business</h2>
+
+        <div style="text-align: center; margin-bottom: var(--space-md);">
+            <img src="{{ url_for('static', filename='qr_codes/' + user.username + '.png') }}"
+                style="max-width: 200px; border: 2px solid var(--border-color); border-radius: 8px;">
+        </div>
+
+        <div class="form-group">
+            <input type="text" id="share-url" class="form-control" value="https://pehchaan.com/{{ user.username }}"
+                readonly onclick="this.select()">
+        </div>
+
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <button class="btn btn-primary" onclick="copyShareLink()">Copy Link</button>
+            <a href="{{ url_for('static', filename='qr_codes/' + user.username + '.png') }}" download
+                class="btn btn-outline">
+                Download QR Code
+            </a>
+        </div>
+
+        <button onclick="closeShareModal()" class="btn btn-outline btn-block" style="margin-top: var(--space-md);">
+            Close
+        </button>
+    </div>
+</div>
+
+<!-- Lightbox -->
+<div id="lightbox"
+    style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.95); z-index: 2000; align-items: center; justify-content: center;"
+    onclick="closeLightbox()">
+    <button onclick="prevImage()"
+        style="position: absolute; left: 20px; background: white; border: 2px solid black; border-radius: 50%; width: 50px; height: 50px; font-size: 24px; cursor: pointer;"
+        onclick="event.stopPropagation()">‹</button>
+    <img id="lightbox-img" src="" style="max-width: 90%; max-height: 90%; border: 4px solid white;"
+        onclick="event.stopPropagation()">
+    <button onclick="nextImage()"
+        style="position: absolute; right: 20px; background: white; border: 2px solid black; border-radius: 50%; width: 50px; height: 50px; font-size: 24px; cursor: pointer;"
+        onclick="event.stopPropagation()">›</button>
+    <button onclick="closeLightbox()"
+        style="position: absolute; top: 20px; right: 20px; background: white; border: 2px solid black; border-radius: 50%; width: 50px; height: 50px; font-size: 24px; cursor: pointer; line-height: 1;">×</button>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Share Modal
+    function openShareModal() {
+        document.getElementById('share-modal').style.display = 'flex';
+    }
+
+    function closeShareModal() {
+        document.getElementById('share-modal').style.display = 'none';
+    }
+
+    function copyShareLink() {
+        const input = document.getElementById('share-url');
+        input.select();
+        document.execCommand('copy');
+        alert('Link copied to clipboard!');
+    }
+
+    // Lightbox Gallery
+    let currentImageIndex = 0;
+    const galleryImages = [
+        {% for image in user.gallery_images %}
+    "{{ url_for('static', filename='uploads/' + image.image_path) }}"{% if not loop.last %}, {% endif %}
+    {% endfor %}
+];
+
+    function openLightbox(index) {
+        currentImageIndex = index;
+        document.getElementById('lightbox-img').src = galleryImages[index];
+        document.getElementById('lightbox').style.display = 'flex';
+    }
+
+    function closeLightbox() {
+        document.getElementById('lightbox').style.display = 'none';
+    }
+
+    function nextImage() {
+        event.stopPropagation();
+        currentImageIndex = (currentImageIndex + 1) % galleryImages.length;
+        document.getElementById('lightbox-img').src = galleryImages[currentImageIndex];
+    }
+
+    function prevImage() {
+        event.stopPropagation();
+        currentImageIndex = (currentImageIndex - 1 + galleryImages.length) % galleryImages.length;
+        document.getElementById('lightbox-img').src = galleryImages[currentImageIndex];
+    }
+
+    // Close on ESC
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            closeShareModal();
+            closeLightbox();
+        }
+    });
+</script>
+{% endblock %}

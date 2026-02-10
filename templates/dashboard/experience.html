@@ -1,0 +1,218 @@
+{% extends "dashboard/base_dashboard.html" %}
+
+{% block title %}Experience - Dashboard{% endblock %}
+
+{% block dashboard_content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-md);">
+    <h1>Manage Experience</h1>
+    <button class="btn btn-primary" onclick="openAddExpModal()">+ Add Experience</button>
+</div>
+
+<!-- Experience List -->
+<div id="exp-container" class="bento-grid">
+    {% for exp in experiences %}
+    <div class="card" data-exp-id="{{ exp.id }}">
+        <!-- Media Display -->
+        {% if exp.youtube_id %}
+        <div style="margin-bottom: 12px; border-radius: 8px; overflow: hidden; aspect-ratio: 16/9;">
+            <iframe width="100%" height="100%" src="https://www.youtube.com/embed/{{ exp.youtube_id }}" frameborder="0"
+                allowfullscreen></iframe>
+        </div>
+        {% endif %}
+
+        {% if exp.images and exp.images|length > 0 %}
+        <div style="display: flex; gap: 8px; overflow-x: auto; margin-bottom: 12px; padding-bottom: 4px;">
+            {% for img in exp.images %}
+            <img src="{{ url_for('static', filename='uploads/' + img.image_path) }}"
+                style="height: 120px; min-width: 160px; object-fit: cover; border-radius: 8px;">
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <h3>{{ exp.position }}</h3>
+        <p style="color: var(--text-secondary); margin: 4px 0; font-weight: 500;">{{ exp.company_name }}</p>
+
+        {% if exp.start_date %}
+        <p style="color: var(--text-muted); font-size: 0.9em; margin: 4px 0;">
+            📅 {{ exp.start_date }} - {{ exp.end_date if exp.end_date else 'Present' }}
+        </p>
+        {% endif %}
+
+        <p style="color: var(--text-muted); margin: 12px 0; white-space: pre-wrap;">{{ exp.description }}</p>
+
+        {% if exp.links and exp.links|length > 0 %}
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0;">
+            {% for link in exp.links %}
+            <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-small"
+                style="font-size: 11px; padding: 4px 10px;">
+                🔗 {{ link.label }}
+            </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div style="display: flex; gap: 12px; margin-top: 16px;">
+            <button class="btn btn-small btn-outline" onclick="editExp({{ exp.id }})">Edit</button>
+            <button class="btn btn-small btn-outline" style="color: #dc3545;"
+                onclick="deleteExp({{ exp.id }})">Delete</button>
+        </div>
+    </div>
+    {% else %}
+    <div class="card" style="text-align: center; padding: var(--space-xl); grid-column: 1 / -1;">
+        <p style="color: var(--text-muted);">No experience added yet. Click "Add Experience" to get started!</p>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Add/Edit Experience Modal -->
+<div class="modal-overlay" id="exp-modal" style="display: none;" onclick="closeExpModal()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <h2 id="modal-title">Add Experience</h2>
+        <form method="POST" action="{{ url_for('dashboard.add_experience') }}" enctype="multipart/form-data"
+            id="exp-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="exp_id" id="exp-id">
+
+            <div class="form-group">
+                <label class="form-label">Position/Role</label>
+                <input type="text" name="position" id="exp-position" class="form-control" required
+                    placeholder="e.g., Software Engineer">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Company Name</label>
+                <input type="text" name="company_name" id="exp-company" class="form-control" required
+                    placeholder="e.g., Google">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Start Date</label>
+                <input type="text" name="start_date" id="exp-start-date" class="form-control"
+                    placeholder="e.g., Jan 2020 or 2020-01">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">End Date</label>
+                <input type="text" name="end_date" id="exp-end-date" class="form-control"
+                    placeholder="Present or Dec 2023">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea name="description" id="exp-description" class="form-control" rows="4"
+                    placeholder="Describe your role and achievements..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">YouTube URL (Optional)</label>
+                <input type="url" name="youtube_url" id="exp-youtube" class="form-control"
+                    placeholder="https://youtube.com/...">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Images (Optional, max 10)</label>
+                <input type="file" name="images" id="exp-images" class="form-control" accept="image/*" multiple>
+                <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">Select up to 10 images to
+                    showcase your work</p>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Proof Links (Optional)</label>
+                <div id="links-container"></div>
+                <button type="button" class="btn btn-outline btn-small" onclick="addProofLink()">+ Add Link</button>
+                <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">Add links to certificates,
+                    projects, or other proof</p>
+            </div>
+
+            <div style="display: flex; gap: 12px; margin-top: var(--space-md);">
+                <button type="submit" class="btn btn-primary">Save Experience</button>
+                <button type="button" class="btn btn-outline" onclick="closeExpModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let linkCounter = 0;
+
+    function addProofLink(label = '', url = '') {
+        const container = document.getElementById('links-container');
+        const newRow = document.createElement('div');
+        newRow.className = 'link-row';
+        newRow.style.cssText = 'display: flex; gap: 12px; margin-bottom: 12px; align-items: center;';
+        newRow.innerHTML = `
+            <input type="text" class="form-control" name="link_label_${linkCounter}" placeholder="Label (e.g., Certificate)" value="${label}" style="flex: 0 0 180px;">
+            <input type="url" class="form-control" name="link_url_${linkCounter}" placeholder="https://..." value="${url}">
+            <button type="button" class="btn btn-outline btn-small" onclick="removeLinkElem(this)" style="color: #dc3545;">&times;</button>
+        `;
+        container.appendChild(newRow);
+        linkCounter++;
+    }
+
+    function removeLinkElem(btn) {
+        btn.parentElement.remove();
+    }
+
+    function openAddExpModal() {
+        document.getElementById('modal-title').textContent = 'Add Experience';
+        document.getElementById('exp-form').action = '{{ url_for("dashboard.add_experience") }}';
+        document.getElementById('exp-form').reset();
+        document.getElementById('exp-id').value = '';
+        document.getElementById('links-container').innerHTML = '';
+        linkCounter = 0;
+        document.getElementById('exp-modal').style.display = 'flex';
+    }
+
+    function closeExpModal() {
+        document.getElementById('exp-modal').style.display = 'none';
+    }
+
+    function editExp(expId) {
+        fetch(`/dashboard/experience/${expId}`)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('modal-title').textContent = 'Edit Experience';
+                document.getElementById('exp-form').action = '{{ url_for("dashboard.edit_experience") }}';
+                document.getElementById('exp-id').value = data.id;
+                document.getElementById('exp-position').value = data.position;
+                document.getElementById('exp-company').value = data.company_name;
+                document.getElementById('exp-start-date').value = data.start_date || '';
+                document.getElementById('exp-end-date').value = data.end_date || 'Present';
+                document.getElementById('exp-description').value = data.description || '';
+                document.getElementById('exp-youtube').value = data.youtube_url || '';
+
+                // Clear and populate links
+                document.getElementById('links-container').innerHTML = '';
+                linkCounter = 0;
+                if (data.links && data.links.length > 0) {
+                    data.links.forEach(link => {
+                        addProofLink(link.label, link.url);
+                    });
+                }
+
+                document.getElementById('exp-modal').style.display = 'flex';
+            });
+    }
+
+    function deleteExp(expId) {
+        if (!confirm('Are you sure you want to delete this experience?')) return;
+
+        fetch(`/dashboard/experience/${expId}/delete`, { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error deleting experience');
+                }
+            });
+    }
+
+    // Close modal on ESC
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            closeExpModal();
+        }
+    });
+</script>
+{% endblock %}

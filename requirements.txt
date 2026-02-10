@@ -1,0 +1,11 @@
+Flask==3.0.0
+Flask-Login==0.6.3
+Flask-WTF==1.2.1
+Flask-SQLAlchemy==3.1.1
+SQLAlchemy==2.0.23
+bcrypt==4.1.2
+qrcode[pil]==7.4.2
+Pillow==10.1.0
+email-validator==2.1.0
+WTForms==3.1.1
+Flask-Limiter==3.5.0

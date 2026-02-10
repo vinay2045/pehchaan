@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}Pehchaan - Your Personal Online Identity{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="section"
+    style="background-color: var(--color-yellow); min-height: 90vh; display: flex; align-items: center;">
+    <div class="container">
+        <!-- Navigation -->
+        <nav class="navbar-content" style="margin-bottom: 80px;">
+            <div class="navbar-brand">pehchaan</div>
+            <div style="display: flex; gap: 24px; align-items: center;">
+                <a href="{{ url_for('auth.login') }}" class="nav-link">Login</a>
+                <a href="{{ url_for('auth.signup') }}" class="btn btn-primary">Get Started</a>
+            </div>
+        </nav>
+
+        <!-- Hero Content -->
+        <div style="max-width: 800px; margin: 0 auto; text-align: center;">
+            <h1 style="font-size: 64px; margin-bottom: 24px; line-height: 1.1;">
+                Your Name.<br>Your Story.<br>Your Website.
+            </h1>
+            <p style="font-size: 20px; margin-bottom: 40px; color: var(--text-secondary);">
+                One simple link for everything you create, share, and sell online.
+            </p>
+            <a href="{{ url_for('auth.signup') }}" class="btn btn-primary btn-large">
+                Create Your Pehchaan
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Problem Section -->
+<section class="section">
+    <div class="container">
+        <div class="container-narrow">
+            <h2 class="text-center mb-lg">The Problem</h2>
+            <div class="bento-grid">
+                <div class="card card-lg">
+                    <h3 style="font-size: 20px; margin-bottom: 12px;">80% of small businesses in India don't have a
+                        website</h3>
+                    <p style="color: var(--text-secondary);">Local shops, clinics, salons—invisible on Google and lost
+                        to competitors.</p>
+                </div>
+                <div class="card card-lg">
+                    <h3 style="font-size: 20px; margin-bottom: 12px;">Non-IT students can't showcase work or
+                        achievements</h3>
+                    <p style="color: var(--text-secondary);">Resumes get ignored. LinkedIn feels incomplete. There's no
+                        real portfolio.</p>
+                </div>
+                <div class="card card-lg">
+                    <h3 style="font-size: 20px; margin-bottom: 12px;">Social media links get lost or buried in DMs</h3>
+                    <p style="color: var(--text-secondary);">"Link in bio" becomes a mess. Nothing is permanent or
+                        searchable.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Solution Section -->
+<section class="section" style="background-color: var(--color-green-light);">
+    <div class="container">
+        <div class="container-narrow">
+            <h2 class="text-center mb-md">The Solution</h2>
+            <p class="text-center mb-xl" style="font-size: 18px; color: var(--text-secondary);">
+                One simple website for everyone
+            </p>
+
+            <div class="bento-grid">
+                <div class="card card-lg bento-item-wide" style="border-color: var(--color-black);">
+                    <div style="font-size: 18px; margin-bottom: 8px; font-weight: 600;">pehchaan.com/vinay-sriramoju
+                    </div>
+                    <p style="color: var(--text-secondary);">✓ Share your projects, skills, resume—all in one place</p>
+                </div>
+                <div class="card card-lg bento-item-wide" style="border-color: var(--color-black);">
+                    <div style="font-size: 18px; margin-bottom: 8px; font-weight: 600;">pehchaan.com/arun-sweet-shop
+                    </div>
+                    <p style="color: var(--text-secondary);">✓ Your business website, live in 5 minutes</p>
+                </div>
+            </div>
+
+            <div class="text-center mt-lg">
+                <p style="font-size: 18px;">
+                    📱 Share via link or QR code<br>
+                    🔍 Found on Google when people search your name
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Why This Matters Section -->
+<section class="section">
+    <div class="container">
+        <div class="container-narrow">
+            <div class="card card-yellow card-lg text-center" style="padding: 48px;">
+                <h2 style="margin-bottom: 24px;">Why This Is A Big Issue</h2>
+                <p style="font-size: 20px; line-height: 1.6; margin-bottom: 32px;">
+                    Your work, story, and business deserve to be found on Google—not buried in social media DMs.
+                </p>
+                <div
+                    style="background-color: var(--bg-card); border: 2px solid var(--color-black); border-radius: 16px; padding: 32px; max-width: 500px; margin: 0 auto;">
+                    <p style="font-size: 20px; font-weight: 600; margin-bottom: 16px;">
+                        Search your name.
+                    </p>
+                    <p style="font-size: 20px; font-weight: 600; margin-bottom: 16px;">
+                        Find your website.
+                    </p>
+                    <p style="font-size: 20px; font-weight: 600; margin-bottom: 0;">
+                        Everyone now has an online identity.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="section" style="background-color: var(--color-cream);">
+    <div class="container text-center">
+        <h2 style="margin-bottom: 24px;">Ready to get started?</h2>
+        <a href="{{ url_for('auth.signup') }}" class="btn btn-primary btn-large">
+            Create Your Pehchaan—It's Free
+        </a>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>pehchaan</h4>
+                <p style="color: #999;">Your personal online identity</p>
+            </div>
+            <div class="footer-section">
+                <h4>Product</h4>
+                <ul class="footer-links">
+                    <li><a href="{{ url_for('auth.signup') }}">Get Started</a></li>
+                    <li><a href="{{ url_for('auth.login') }}">Login</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Company</h4>
+                <ul class="footer-links">
+                    <li><a href="#">About</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="text-center" style="padding-top: 32px; border-top: 1px solid #333; color: #999;">
+            <p>© 2026 Pehchaan. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
+{% endblock %}
