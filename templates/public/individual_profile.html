@@ -1,446 +1,135 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
 
-{% block title %}{{ user.full_name or user.username }} - Pehchaan{% endblock %}
-
-{% block content %}
-<!-- Navigation Bar -->
-<div
-    style=" top: 0; z-index: 100; background: var(--card-bg); border-bottom: 1px solid var(--border-color); backdrop-filter: blur(10px);">
-    <div class="container"
-        style="display: flex; justify-content: space-between; align-items: center; padding: 16px 24px;">
-        <h2 style="margin: 0; font-size: 24px; font-weight: 700;">Pehchaan</h2>
-        <p style="margin: 0; font-size: 20px; font-weight: 500; opacity: .6;color: var(--text-primary);">@{{
-            user.username }}</p>
-    </div>
-</div>
-
-<!-- QR Code Modal -->
-<div id="qrModal"
-    style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; z-index: 1000;">
-    <div class="card" style="max-width: 400px; width: 90%; padding: var(--space-xl); position: relative;">
-        <button onclick="document.getElementById('qrModal').style.display='none'"
-            style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-secondary);">&times;</button>
-        <h2 style="margin: 0 0 16px 0; text-align: center;">Share Profile</h2>
-        <div style="text-align: center; padding: 20px;">
-            {% if user.qr_code %}
-            <img src="{{ url_for('static', filename='qr_codes/' + user.qr_code) }}"
-                style="width: 250px; height: 250px; border-radius: 12px;" alt="QR Code">
-            {% else %}
-            <div
-                style="width: 250px; height: 250px; background: var(--bg-secondary); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
-                <p style="color: var(--text-muted);">QR Code not available</p>
-            </div>
-            {% endif %}
-        </div>
-        <p style="text-align: center; color: var(--text-secondary); margin: 16px 0 0 0; font-size: 14px;">
-            Scan to view profile
-        </p>
-    </div>
-</div>
-
-<!-- Banner Section -->
-<div class="banner-area"
-    style="width: 100%; height: 300px; position: relative; background: {% if user.banner_image %}url('{{ url_for('static', filename='uploads/' + user.banner_image) }}') center/cover{% else %}linear-gradient(135deg, var(--yellow) 0%, var(--green) 100%){% endif %};">
-</div>
-
-<!-- Profile Header -->
-<div class="container" style="margin-top: -80px; position: relative; z-index: 2;">
-    <div class="card" style="padding: var(--space-lg); margin-bottom: var(--space-lg);">
-        <div style="display: flex; align-items: flex-start; gap: var(--space-lg); flex-wrap: wrap;">
-            <!-- Profile Image -->
-            <div style="flex: 0 0 auto;">
-                {% if user.profile_image %}
-                <img src="{{ url_for('static', filename='uploads/' + user.profile_image) }}"
-                    style="width: 160px; height: 160px; border-radius: 50%; object-fit: cover; border: 4px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-                {% else %}
-                <div
-                    style="width: 160px; height: 160px; border-radius: 50%; background: var(--yellow); border: 4px solid white; display: flex; align-items: center; justify-content: center; font-size: 48px; font-weight: bold;">
-                    {{ user.full_name[0] if user.full_name else user.username[0]|upper }}
-                </div>
-                {% endif %}
-            </div>
-
-            <!-- Profile Info -->
-            <div style="flex: 1; min-width: 250px;">
-                <h1 style="margin: 0 0 8px 0;">{{ user.full_name or user.username }}</h1>
-                <p style="color: var(--text-secondary); margin: 0 0 12px 0;">@{{ user.username }}</p>
-
-                {% if user.profile_tag %}
-                <span class="pill pill-yellow" style="margin-bottom: 12px; display: inline-block;">{{ user.profile_tag
-                    }}</span>
-                {% endif %}
-
-                {% if user.tagline %}
-                <p
-                    style="font-size: var(--font-size-lg); font-style: italic; margin: 12px 0; color: var(--text-secondary);">
-                    "{{ user.tagline }}"</p>
-                {% endif %}
-
-                {% if user.resume_pdf %}
-                <div style="margin-bottom: 16px;">
-                    <a href="{{ url_for('profile.download_resume', user_id=user.id) }}"
-                        style="color: var(--text-primary); text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: 500;">
-                        📄 View Resume
-                    </a>
-                </div>
-                {% endif %}
-
-                <button class="btn btn-yellow" onclick="openShareModal()">
-                    Share Profile
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Bio Section -->
-{% if user.bio %}
-<section class="section">
-    <div class="container">
-        <div class="card">
-            <h2 style="margin-bottom: var(--space-md);">About</h2>
-            <p style="white-space: pre-wrap; line-height: 1.8;">{{ user.bio }}</p>
-        </div>
-    </div>
-</section>
-{% endif %}
-
-<!-- Skills Section -->
-{% if user.skills %}
-<section class="section">
-    <div class="container">
-        <h2 style="margin-bottom: var(--space-md);">Skills</h2>
-        <div style="display: flex; flex-wrap: wrap; gap: 12px;">
-            {% for skill in user.skills %}
-            <span class="pill pill-green">{{ skill.name }}</span>
-            {% endfor %}
-        </div>
-    </div>
-</section>
-{% endif %}
-
-<!-- Projects Section (Bento Grid) -->
-{% if user.projects %}
-<section class="section">
-    <div class="container">
-        <h2 style="margin-bottom: var(--space-md);">Projects</h2>
-        <div class="bento-grid">
-            {% for project in user.projects|sort(attribute='display_order') %}
-            <div class="card">
-                {% if project.images %}
-                <img src="{{ url_for('static', filename='uploads/' + project.images[0].image_path) }}"
-                    style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px 8px 0 0; margin: -24px -24px 16px -24px;">
-                {% endif %}
-
-                <h3 style="margin-bottom: 12px;">{{ project.title }}</h3>
-                <p style="color: var(--text-secondary); margin-bottom: 16px;">{{ project.description }}</p>
-
-                {% if project.youtube_id %}
-                <div style="margin-bottom: 16px; border-radius: 8px; overflow: hidden; aspect-ratio: 16/9;">
-                    <iframe width="100%" height="100%" src="https://www.youtube.com/embed/{{ project.youtube_id }}"
-                        frameborder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowfullscreen></iframe>
-                </div>
-                {% endif %}
-
-                {% if project.technologies %}
-                <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;">
-                    {% for tech in project.technologies.split(',') %}
-                    <span class="pill" style="font-size: 12px; padding: 4px 10px;">{{ tech.strip() }}</span>
-                    {% endfor %}
-                </div>
-                {% endif %}
-
-                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                    {% if project.demo_url %}
-                    <a href="{{ project.demo_url }}" class="btn btn-small btn-outline" target="_blank">Live Demo</a>
-                    {% endif %}
-                    {% if project.github_url %}
-                    <a href="{{ project.github_url }}" class="btn btn-small btn-outline" target="_blank">GitHub</a>
-                    {% endif %}
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-</section>
-{% endif %}
-
-<!-- Experience Section (Timeline) -->
-{% if user.experiences %}
-<section class="section">
-    <div class="container">
-        <h2 style="margin-bottom: var(--space-md);">Experience</h2>
-        {% for exp in user.experiences|sort(attribute='display_order') %}
-        <div class="card" style="margin-bottom: var(--space-md);">
-            <div
-                style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; margin-bottom: 12px;">
-                <div>
-                    <h3 style="margin: 0;">{{ exp.role }}</h3>
-                    <p style="color: var(--text-secondary); margin: 4px 0;">{{ exp.company }}</p>
-                </div>
-                <span class="pill" style="flex-shrink: 0;">{{ exp.start_date }} - {{ exp.end_date or 'Present' }}</span>
-            </div>
-            {% if exp.description %}
-            <p style="color: var(--text-secondary); margin-top: 12px; white-space: pre-wrap;">{{ exp.description }}</p>
-            {% endif %}
-
-            {% if exp.youtube_id %}
-            <div style="margin-top: 16px; border-radius: 8px; overflow: hidden; aspect-ratio: 16/9; max-width: 600px;">
-                <iframe width="100%" height="100%" src="https://www.youtube.com/embed/{{ exp.youtube_id }}"
-                    frameborder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowfullscreen></iframe>
-            </div>
-            {% endif %}
-
-            {% if exp.images and exp.images|length > 0 %}
-            <div style="display: flex; gap: 12px; margin-top: 16px; overflow-x: auto;">
-                {% for img in exp.images[:5] %}
-                <img src="{{ url_for('static', filename='uploads/' + img.image_path) }}" alt="Experience image"
-                    style="height: 120px; border-radius: 8px; object-fit: cover;">
-                {% endfor %}
-            </div>
-            {% endif %}
-
-            {% if exp.links and exp.links|length > 0 %}
-            <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px;">
-                {% for link in exp.links %}
-                <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-small">
-                    🔗 {{ link.label }}
-                </a>
-                {% endfor %}
-            </div>
-            {% endif %}
-        </div>
-        {% endfor %}
-    </div>
-</section>
-{% endif %}
-
-<!-- Gallery Section (Bento Grid with Lightbox) -->
-{% if user.gallery_images %}
-<section class="section">
-    <div class="container">
-        <h2 style="margin-bottom: var(--space-md);">Gallery</h2>
-        <div class="bento-grid">
-            {% for image in user.gallery_images %}
-            <div class="card" style="padding: 0; overflow: hidden; cursor: pointer;"
-                onclick="openLightbox({{ loop.index0 }})">
-                <img src="{{ url_for('static', filename='uploads/' + image.image_path) }}"
-                    style="width: 100%; height: 250px; object-fit: cover;">
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-</section>
-{% endif %}
-
-<!-- Others/Achievements Section -->
-{% if user.others %}
-<section class="section">
-    <div class="container">
-        <h2 style="margin-bottom: var(--space-md);">Achievements & Certifications</h2>
-        <div class="bento-grid">
-            {% for item in user.others %}
-            <div class="card">
-                <h3 style="margin-bottom: 8px;">{{ item.title }}</h3>
-                {% if item.achieved_date %}
-                <span class="pill" style="display: inline-block; margin-bottom: 8px;">{{ item.achieved_date }}</span>
-                {% endif %}
-                <p style="color: var(--text-secondary); margin-bottom: 12px;">{{ item.description }}</p>
-
-                {% if item.youtube_id %}
-                <div style="margin-top: 16px; border-radius: 8px; overflow: hidden; aspect-ratio: 16/9;">
-                    <iframe width="100%" height="100%" src="https://www.youtube.com/embed/{{ item.youtube_id }}"
-                        frameborder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowfullscreen></iframe>
-                </div>
-                {% endif %}
-
-                {% if item.images and item.images|length > 0 %}
-                <div style="display: flex; gap: 12px; margin-top: 16px; overflow-x: auto;">
-                    {% for img in item.images[:5] %}
-                    <img src="{{ url_for('static', filename='uploads/' + img.image_path) }}" alt="Achievement image"
-                        style="height: 120px; border-radius: 8px; object-fit: cover;">
-                    {% endfor %}
-                </div>
-                {% endif %}
-
-                {% if item.links and item.links|length > 0 %}
-                <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px;">
-                    {% for link in item.links %}
-                    <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer"
-                        class="btn btn-outline btn-small">
-                        🔗 {{ link.label }}
-                    </a>
-                    {% endfor %}
-                </div>
-                {% endif %}
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-</section>
-{% endif %}
-
-<!-- Social Links -->
-{% if user.social_links %}
-<section class="section">
-    <div class="container text-center">
-        <h2 style="margin-bottom: var(--space-md);">Connect</h2>
-        <div style="display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;">
-            {% for link in user.social_links %}
-            <a href="{{ link.url }}" class="btn btn-outline" target="_blank" rel="noopener">
-                {{ link.platform|capitalize }}
-            </a>
-            {% endfor %}
-        </div>
-    </div>
-</section>
-{% endif %}
-
-<!-- Contact Form -->
-<section class="section" style="background: var(--bg-card);">
-    <div class="container container-narrow">
-        <h2 class="text-center" style="margin-bottom: var(--space-md);">Get in Touch</h2>
-        <form method="POST" action="{{ url_for('profile.contact', username=user.username) }}" class="card">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <div class="form-group">
-                <label class="form-label">Name</label>
-                <input type="text" name="name" class="form-control" required>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Email</label>
-                <input type="email" name="email" class="form-control" required>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Phone (Optional)</label>
-                <input type="tel" name="phone" class="form-control">
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Subject</label>
-                <input type="text" name="subject" class="form-control" required>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Message</label>
-                <textarea name="message" class="form-control" rows="5" required></textarea>
-            </div>
-
-            <button type="submit" class="btn btn-primary btn-large btn-block">
-                Send Message
-            </button>
-        </form>
-    </div>
-</section>
-
-<!-- Share Modal -->
-<div class="modal-overlay" id="share-modal" onclick="closeShareModal()"
-    style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center;">
-    <div class="card" style="max-width: 500px; width: 90%; padding: var(--space-xl);" onclick="event.stopPropagation()">
-        <h2 style="margin-bottom: var(--space-md); text-align: center;">Share Profile</h2>
-
-        <div style="text-align: center; margin-bottom: var(--space-md);">
-            <img src="{{ url_for('static', filename='qr_codes/' + user.username + '.png') }}"
-                style="max-width: 200px; border: 2px solid var(--border-color); border-radius: 8px;">
-        </div>
-
-        <div class="form-group">
-            <input type="text" id="share-url" class="form-control" value="https://pehchaan.com/{{ user.username }}"
-                readonly onclick="this.select()">
-        </div>
-
-        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-            <button class="btn btn-primary" onclick="copyShareLink()">Copy Link</button>
-            <a href="{{ url_for('static', filename='qr_codes/' + user.username + '.png') }}" download
-                class="btn btn-outline">
-                Download QR Code
-            </a>
-        </div>
-
-        <button onclick="closeShareModal()" class="btn btn-outline btn-block" style="margin-top: var(--space-md);">
-            Close
-        </button>
-    </div>
-</div>
-
-<!-- Lightbox for Gallery -->
-<div id="lightbox"
-    style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.95); z-index: 2000; align-items: center; justify-content: center;"
-    onclick="closeLightbox()">
-    <button onclick="prevImage()"
-        style="position: absolute; left: 20px; background: white; border: 2px solid black; border-radius: 50%; width: 50px; height: 50px; font-size: 24px; cursor: pointer;"
-        onclick="event.stopPropagation()">‹</button>
-    <img id="lightbox-img" src="" style="max-width: 90%; max-height: 90%; border: 4px solid white;"
-        onclick="event.stopPropagation()">
-    <button onclick="nextImage()"
-        style="position: absolute; right: 20px; background: white; border: 2px solid black; border-radius: 50%; width: 50px; height: 50px; font-size: 24px; cursor: pointer;"
-        onclick="event.stopPropagation()">›</button>
-    <button onclick="closeLightbox()"
-        style="position: absolute; top: 20px; right: 20px; background: white; border: 2px solid black; border-radius: 50%; width: 50px; height: 50px; font-size: 24px; cursor: pointer; line-height: 1;">×</button>
-</div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-    // Share Modal
-    function openShareModal() {
-        document.getElementById('share-modal').style.display = 'flex';
-    }
-
-    function closeShareModal() {
-        document.getElementById('share-modal').style.display = 'none';
-    }
-
-    function copyShareLink() {
-        const input = document.getElementById('share-url');
-        input.select();
-        document.execCommand('copy');
-        alert('Link copied to clipboard!');
-    }
-
-    // Lightbox Gallery
-    let currentImageIndex = 0;
-    const galleryImages = [
-        {% for image in user.gallery_images %}
-    "{{ url_for('static', filename='uploads/' + image.image_path) }}"{% if not loop.last %}, {% endif %}
-    {% endfor %}
-];
-
-    function openLightbox(index) {
-        currentImageIndex = index;
-        document.getElementById('lightbox-img').src = galleryImages[index];
-        document.getElementById('lightbox').style.display = 'flex';
-    }
-
-    function closeLightbox() {
-        document.getElementById('lightbox').style.display = 'none';
-    }
-
-    function nextImage() {
-        event.stopPropagation();
-        currentImageIndex = (currentImageIndex + 1) % galleryImages.length;
-        document.getElementById('lightbox-img').src = galleryImages[currentImageIndex];
-    }
-
-    function prevImage() {
-        event.stopPropagation();
-        currentImageIndex = (currentImageIndex - 1 + galleryImages.length) % galleryImages.length;
-        document.getElementById('lightbox-img').src = galleryImages[currentImageIndex];
-    }
-
-    // Close lightbox on ESC
-    document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') {
-            closeShareModal();
-            closeLightbox();
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ user.full_name or user.username }} - Portfolio</title>
+    <!-- Custom Redesign CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/profile_redesign.css') }}">
+    <style>
+        /* Inline overrides if needed */
+        body {
+            margin: 0;
+            padding: 0;
         }
-    });
-</script>
-{% endblock %}
+    </style>
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="profile-nav">
+        <div class="logo">{{ user.full_name or user.username }}</div>
+        <div class="nav-links">
+            <a href="#work">Work</a>
+            <a href="#about">About</a>
+            <a href="#contact">Contact</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section (Yellow) -->
+    <section class="hero-section">
+        <h1 class="hero-text">
+            Hi, I'm {{ user.full_name or user.username }}, a
+            <span>{{ user.profile_tag or 'Creative' }}</span> based in
+            <span>{{ user.location or 'the World' }}</span>.
+            {{ user.bio or "I create digital experiences that blend form and function." }}
+        </h1>
+    </section>
+
+    <!-- Work Section (Green) -->
+    <section id="work" class="work-section">
+        <div class="section-header">
+            <h2 class="section-title">Work</h2>
+            <div class="section-desc">
+                I bring critical thinking and an eye for detail to create compelling websites, products, and
+                experiences.
+                Here is a selection of my recent work.
+            </div>
+        </div>
+
+        <div class="project-grid">
+            {% if user.projects %}
+            {% for project in user.projects %}
+            <div class="project-card">
+                <div class="project-image-wrapper" style="--rotation: {{ range(-2, 2) | random }}deg;">
+                    {% if project.images %}
+                    <img src="{{ url_for('static', filename='uploads/' + project.images[0].image_path) }}"
+                        alt="{{ project.title }}" class="project-image">
+                    {% else %}
+                    <div
+                        style="width: 100%; height: 100%; background: #333; display: flex; align-items: center; justify-content: center; color: white;">
+                        No Image
+                    </div>
+                    {% endif %}
+                </div>
+                <h3 class="project-title">{{ project.title }}</h3>
+                <div class="project-tags">
+                    {% if project.technologies %}
+                    {{ project.technologies.split(',') | join(' / ') }}
+                    {% else %}
+                    Project
+                    {% endif %}
+                </div>
+                <div style="margin-top: 1rem;">
+                    {% if project.demo_url %}
+                    <a href="{{ project.demo_url }}" target="_blank"
+                        style="margin-right: 1rem; text-decoration: underline;">View Live</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="project-card">
+                <p>No projects added yet.</p>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- About / Other Section (Yellow again or White) -->
+    <section id="about" style="padding: 6rem 4rem; background-color: var(--yellow-bg);">
+        <div class="section-header">
+            <h2 class="section-title">About</h2>
+            <div class="section-desc">
+                {{ user.tagline or "More about me and my background." }}
+            </div>
+        </div>
+
+        {% if user.experiences %}
+        <div style="display: grid; gap: 2rem; max-width: 800px;">
+            {% for exp in user.experiences %}
+            <div style="border-top: 1px solid rgba(0,0,0,0.1); padding-top: 1rem;">
+                <h3 style="font-size: 2rem; margin: 0;">{{ exp.role }}</h3>
+                <p style="font-family: var(--font-sans); margin: 0.5rem 0; opacity: 0.7;">{{ exp.company }} • {{
+                    exp.start_date }} - {{ exp.end_date or 'Present' }}</p>
+                <p style="font-family: var(--font-sans);">{{ exp.description }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" style="padding: 6rem 4rem; background-color: #fff;">
+        <h2 class="section-title" style="margin-bottom: 2rem;">Let's Connect</h2>
+        <div style="font-size: 2rem; font-family: var(--font-serif);">
+            <a href="mailto:{{ user.email }}" style="color: black; text-decoration: underline;">{{ user.email }}</a>
+        </div>
+
+        {% if user.social_links %}
+        <div style="margin-top: 3rem; display: flex; gap: 2rem; font-family: var(--font-sans);">
+            {% for link in user.social_links %}
+            <a href="{{ link.url }}" target="_blank"
+                style="color: black; text-decoration: none; text-transform: uppercase; font-weight: 500;">
+                {{ link.platform }} ↗
+            </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </section>
+
+</body>
+
+</html>
