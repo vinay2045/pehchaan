@@ -3,12 +3,14 @@
 
 :root {
     --yellow-bg: #FBF8CC;
-    /* Soft Yellow from reference */
     --green-bg: #E2F0CB;
-    /* Soft Green from reference */
     --text-primary: #1a1a1a;
-    --font-serif: 'Instrument Serif', serif;
+    --font-serif: 'Instrument Serif';
     --font-sans: 'Inter', sans-serif;
+}
+
+* {
+    box-sizing: border-box;
 }
 
 body {
@@ -17,6 +19,7 @@ body {
     margin: 0;
     padding: 0;
     line-height: 1.4;
+    overflow-x: hidden;
 }
 
 /* Typography */
@@ -28,6 +31,7 @@ h5,
 h6 {
     font-family: var(--font-serif);
     font-weight: 400;
+    margin-top: 0;
 }
 
 /* Navigation */
@@ -35,18 +39,34 @@ h6 {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 2rem 4rem;
+    padding: 1.5rem 3rem;
     background-color: var(--yellow-bg);
     position: sticky;
     top: 0;
     z-index: 1000;
+    border-bottom: 2px solid var(--text-primary);
+}
+
+.profile-nav .brand-group {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 }
 
 .profile-nav .logo {
     font-size: 1.5rem;
-    /* Sans serif logo */
-    font-weight: 500;
+    font-weight: 550;
     letter-spacing: -0.02em;
+
+    font-family: var(--font-serif);
+}
+
+.profile-nav .site-brand {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 1.2rem;
+    border-left: 2px solid var(--text-primary);
+    padding-left: 1rem;
 }
 
 .profile-nav .nav-links {
@@ -60,126 +80,288 @@ h6 {
     font-size: 0.9rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    font-weight: 500;
+    font-weight: 600;
+}
+
+/* Banner */
+.banner-section {
+    width: 100%;
+    height: 350px;
+    background-size: cover;
+    background-position: center;
+    border-bottom: 2px solid var(--text-primary);
+    position: relative;
+    background-color: var(--yellow-bg);
+    /* Fallback */
 }
 
 /* Hero Section */
 .hero-section {
     background-color: var(--yellow-bg);
-    padding: 4rem 4rem 8rem 4rem;
-    min-height: 60vh;
+    padding: 6rem 4rem;
+    min-height: 50vh;
     display: flex;
     align-items: center;
+    border-bottom: 2px solid var(--text-primary);
+}
+
+.hero-content {
+    display: flex;
+    align-items: center;
+    gap: 3rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
 }
 
 .hero-text {
-    font-family: var(--font-serif);
     font-size: 4.5rem;
     line-height: 1.1;
-    max-width: 1200px;
     margin: 0;
+    flex: 1;
 }
 
 .hero-text span {
     font-style: italic;
-    /* For emphasis like 'designer' */
 }
 
-/* Work Section */
-.work-section {
-    background-color: var(--green-bg);
+/* Profile Image */
+.profile-image-container {
+    width: 250px;
+    height: 250px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 4px solid var(--text-primary);
+    flex-shrink: 0;
+    box-shadow: 10px 10px 0px rgba(0, 0, 0, 0.1);
+}
+
+.profile-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Section Common */
+.content-section {
     padding: 6rem 4rem;
+    border-bottom: 2px solid var(--text-primary);
 }
 
 .section-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    /* Align top */
     margin-bottom: 4rem;
 }
 
 .section-title {
-    font-size: 6rem;
+    font-size: 5rem;
+    line-height: 0.9;
     margin: 0;
-    line-height: 1;
 }
 
 .section-desc {
-    max-width: 500px;
+    max-width: 400px;
     font-size: 1.1rem;
     line-height: 1.6;
+    font-weight: 500;
 }
 
-/* Project Grid */
+/* Work / Projects */
+.bg-green {
+    background-color: var(--green-bg);
+}
+
+.bg-white {
+    background-color: #ffffff;
+}
+
 .project-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 3rem;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 4rem;
 }
 
 .project-card {
-    background: transparent;
-    transition: transform 0.3s ease;
-}
-
-.project-card:hover {
-    transform: translateY(-5px);
+    position: relative;
 }
 
 .project-image-wrapper {
     width: 100%;
     aspect-ratio: 4/3;
-    /* Standard aspect ratio */
     overflow: hidden;
+    border: 2px solid var(--text-primary);
     margin-bottom: 1.5rem;
-    /* Rotation for quirky effect */
+    background: #000;
     transform: rotate(var(--rotation, 0deg));
+    transition: transform 0.3s;
 }
 
-.project-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+.project-card:hover .project-image-wrapper {
+    transform: rotate(0deg) scale(1.02);
+    box-shadow: 10px 10px 0px var(--text-primary);
 }
 
 .project-title {
     font-size: 2.5rem;
-    margin: 0 0 0.5rem 0;
+    margin-bottom: 0.5rem;
 }
 
-.project-tags {
+/* Skills */
+.skills-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.skill-pill {
+    padding: 0.8rem 2rem;
+    border: 2px solid var(--text-primary);
+    border-radius: 50px;
     font-family: var(--font-sans);
-    font-size: 0.9rem;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    opacity: 0.7;
+    font-size: 1rem;
+    background: transparent;
+    cursor: default;
+    transition: background 0.2s;
 }
 
-/* Mobile Responsiveness */
+.skill-pill:hover {
+    background: var(--text-primary);
+    color: var(--yellow-bg);
+}
+
+/* Experiences */
+.experience-item {
+    border-top: 2px solid var(--text-primary);
+    padding: 2rem 0;
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 2rem;
+}
+
+.exp-role {
+    font-size: 2.5rem;
+    line-height: 1;
+}
+
+.exp-company {
+    font-size: 1.2rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+}
+
+.exp-date {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 1.2rem;
+}
+
+/* Contact Form - BRUTALIST FIX */
+.contact-form {
+    display: grid;
+    gap: 0;
+    border: 2px solid var(--text-primary);
+}
+
+.form-group {
+    border-bottom: 2px solid var(--text-primary);
+    position: relative;
+}
+
+.form-group:last-child {
+    border-bottom: none;
+}
+
+.form-group label {
+    display: block;
+    padding: 1rem 1.5rem 0.5rem 1.5rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-primary);
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.5rem 1.5rem 1.5rem 1.5rem;
+    border: none;
+    background: transparent;
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    color: var(--text-primary);
+    outline: none;
+    border-radius: 0;
+}
+
+.form-control::placeholder {
+    opacity: 0.3;
+}
+
+.form-control:focus {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.btn-submit {
+    width: 100%;
+    padding: 1.5rem;
+    background: var(--text-primary);
+    color: var(--green-bg);
+    font-family: var(--font-sans);
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-submit:hover {
+    background: black;
+    color: white;
+}
+
+/* Responsive */
 @media (max-width: 768px) {
     .profile-nav {
-        padding: 1.5rem;
-    }
-
-    .hero-section {
-        padding: 3rem 1.5rem;
+        padding: 1rem;
     }
 
     .hero-text {
-        font-size: 2.5rem;
+        font-size: 3rem;
     }
 
-    .section-header {
-        flex-direction: column;
+    .hero-content {
+        flex-direction: column-reverse;
+        align-items: flex-start;
         gap: 2rem;
     }
 
-    .section-title {
-        font-size: 4rem;
+    .profile-image-container {
+        width: 150px;
+        height: 150px;
+        margin-bottom: 0;
     }
 
-    .work-section {
-        padding: 4rem 1.5rem;
+    .section-title {
+        font-size: 3.5rem;
     }
+
+    .contact-form {
+        border-width: 2px;
+    }
+
+    .experience-item {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .nav-links {
+        display: none;
+    }
+
+    /* Consider hamburger for mobile */
 }
