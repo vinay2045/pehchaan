@@ -58,11 +58,25 @@ def profile():
             Skill.query.filter_by(user_id=current_user.id).delete()
             skills_str = request.form.get('skills', '')
             if skills_str:
-                for idx, skill_name in enumerate(skills_str.split(',')):
-                    skill_name = skill_name.strip()
-                    if skill_name:
-                        skill = Skill(user_id=current_user.id, name=skill_name, order=idx)
-                        db.session.add(skill)
+                import json
+                # Skills are now in format: {"name":"HTML","category":"Frontend"}|||{"name":"Python","category":"Backend"}
+                for idx, skill_data in enumerate(skills_str.split('|||')):
+                    skill_data = skill_data.strip()
+                    if skill_data:
+                        try:
+                            skill_obj = json.loads(skill_data)
+                            skill = Skill(
+                                user_id=current_user.id, 
+                                name=skill_obj.get('name', ''),
+                                category=skill_obj.get('category', ''),
+                                experience_duration='', # Removed from frontend
+                                order=idx
+                            )
+                            db.session.add(skill)
+                        except json.JSONDecodeError:
+                            # Fallback for old format (plain text)
+                            skill = Skill(user_id=current_user.id, name=skill_data, order=idx)
+                            db.session.add(skill)
             
             # Update social links - delete all and recreate
             SocialLink.query.filter_by(user_id=current_user.id).delete()
@@ -610,7 +624,18 @@ def mark_message_read(message_id):
     message = Message.query.filter_by(id=message_id, recipient_id=current_user.id).first_or_404()
     message.is_read = True
     db.session.commit()
+    message.is_read = True
+    db.session.commit()
     return jsonify({'success': True})
+
+@dashboard_bp.route('/messages/delete-all', methods=['POST'])
+@login_required
+def delete_all_messages():
+    from models import Message
+    Message.query.filter_by(recipient_id=current_user.id).delete()
+    db.session.commit()
+    flash('All messages deleted successfully.', 'success')
+    return redirect(url_for('dashboard.messages'))
 
 @dashboard_bp.route('/services')
 @login_required

@@ -105,7 +105,8 @@
 
     <div class="form-group">
         {{ form.profile_tag.label }}
-        {{ form.profile_tag(class="form-control", placeholder="e.g., UI/UX Designer, Sweet Shop Owner") }}
+        {{ form.profile_tag(class="form-control", placeholder="e.g., UI/UX Designer, Frontend Developer, AI Enthusiast")
+        }}
     </div>
 
     <div class="form-group">
@@ -120,17 +121,21 @@
         <div id="skills-container" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
             {% for skill in current_user.skills %}
             <span class="pill pill-yellow" style="display: inline-flex; align-items: center; gap: 8px;">
-                {{ skill.name }}
+                {% if skill.category %}<strong>{{ skill.category }}:</strong> {% endif %}{{ skill.name }}{% if
+                skill.experience_duration %} <em style="opacity: 0.8;">({{ skill.experience_duration }})</em>{% endif %}
                 <button type="button" onclick="removeSkillElem(this)"
                     style="background: none; border: none; cursor: pointer; font-size: 16px; line-height: 1; padding: 0; color: inherit;">&times;</button>
             </span>
             {% endfor %}
         </div>
-        <div style="display: flex; gap: 8px;">
-            <input type="text" id="skill-input" class="form-control" placeholder="Add a skill (press Enter)"
-                onkeypress="if(event.key==='Enter'){addSkill(event)}">
+        <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+            <input type="text" id="skill-category-input" class="form-control" placeholder="Category (e.g., Frontend)"
+                style="flex: 2;">
+            <input type="text" id="skill-input" class="form-control" placeholder="Skill (e.g., HTML,CSS,JS)"
+                style="flex: 2;" onkeypress="if(event.key==='Enter'){addSkill(event)}">
             <button type="button" class="btn btn-outline" onclick="addSkill(event)">Add</button>
         </div>
+        <p style="font-size: 12px; color: var(--text-muted);">Add category and skill name.</p>
         <input type="hidden" name="skills" id="skills-hidden" value="">
     </div>
 
@@ -244,37 +249,54 @@
 
     // Skills Management
     function addSkill(e) {
-        e.preventDefault();
+        if (e) e.preventDefault();
         const input = document.getElementById('skill-input');
+        const categoryInput = document.getElementById('skill-category-input');
         const skill = input.value.trim();
+        const category = categoryInput.value.trim();
 
         if (!skill) return;
 
         const container = document.getElementById('skills-container');
         const skillPill = document.createElement('span');
         skillPill.className = 'pill pill-yellow';
-        skillPill.style.cssText = 'display: inline-flex; align-items: center; gap: 8px;';
-        skillPill.innerHTML = `${skill} <button type="button" onclick="removeSkillElem(this)" style="background: none; border: none; cursor: pointer; font-size: 16px; line-height: 1; padding: 0; color: inherit;">&times;</button>`;
+        skillPill.style.cssText = 'display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px; background: var(--yellow-bg); border: 1px solid var(--text-primary); border-radius: 20px;';
+
+        // Critical: Set data attributes cleanly
+        skillPill.setAttribute('data-skill', skill);
+        skillPill.setAttribute('data-category', category);
+
+        const displayText = category ? `<strong>${category}:</strong> ${skill}` : skill;
+
+        // Use a span for text to avoid innerHTML issues with button
+        skillPill.innerHTML = `<span>${displayText}</span><button type="button" onclick="removeSkillElem(this)" style="background: none; border: none; cursor: pointer; font-size: 16px; margin-left: 8px; color: inherit;">&times;</button>`;
+
         container.appendChild(skillPill);
         input.value = '';
+        categoryInput.value = '';
         updateSkillsHidden();
     }
 
     function removeSkillElem(btn) {
-        btn.parentElement.remove();
+        // Remove the parent span (the pill)
+        btn.closest('.pill').remove();
         updateSkillsHidden();
     }
 
     function updateSkillsHidden() {
-        const skills = Array.from(document.querySelectorAll('#skills-container .pill')).map(el => {
-            const text = el.textContent.trim();
-            return text.replace('×', '').trim();
+        const pills = document.querySelectorAll('#skills-container .pill');
+        const skills = Array.from(pills).map(el => {
+            return JSON.stringify({
+                name: el.getAttribute('data-skill') || '',
+                category: el.getAttribute('data-category') || ''
+            });
         });
-        document.getElementById('skills-hidden').value = skills.join(',');
+        console.log("Updating hidden skills:", skills); // Debug
+        document.getElementById('skills-hidden').value = skills.join('|||');
     }
 
-    // Initialize skills hidden field
-    updateSkillsHidden();
+    // Initialize skills hidden field on load to capture existing skills
+    document.addEventListener('DOMContentLoaded', updateSkillsHidden);
 
     // Social Links Management
     let socialLinkCounter = {{ current_user.social_links| length }};

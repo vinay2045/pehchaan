@@ -4,6 +4,22 @@
 
 {% block content %}
 <!-- Banner Section -->
+<!-- Flash Messages (Fixed Top) -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div
+    style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; width: 90%; max-width: 600px;">
+    {% for category, message in messages %}
+    <div class="alert"
+        style="padding: 16px 24px; margin-bottom: 12px; border-radius: 50px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; background-color: #FBF8CC; color: #1a1a1a; border: 2px solid #1a1a1a; font-family: 'Instrument Serif', serif; font-size: 1.2rem;">
+        <span>{{ message }}</span>
+        <button onclick="this.parentElement.remove()"
+            style="background: none; border: none; font-size: 24px; cursor: pointer; color: inherit; line-height: 1; margin-left: 12px;">&times;</button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
 <div
     style="width: 100%; height: 300px; background: {% if user.banner_image %}url('{{ url_for('static', filename='uploads/' + user.banner_image) }}') center/cover{% else %}linear-gradient(135deg, var(--green) 0%, var(--yellow) 100%){% endif %}; position: relative;">
 </div>

@@ -64,6 +64,36 @@
                     </div>
 
                     <div class="form-group">
+                        {{ individual_form.country.label }}
+                        {{ individual_form.country(class="form-control") }}
+                        {% if individual_form.country.errors %}
+                        {% for error in individual_form.country.errors %}
+                        <small style="color: #CC0000;">{{ error }}</small>
+                        {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        {{ individual_form.state.label }}
+                        {{ individual_form.state(class="form-control", id="individual-state-select") }}
+                        {% if individual_form.state.errors %}
+                        {% for error in individual_form.state.errors %}
+                        <small style="color: #CC0000;">{{ error }}</small>
+                        {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        {{ individual_form.district.label }}
+                        {{ individual_form.district(class="form-control", id="individual-district-select") }}
+                        {% if individual_form.district.errors %}
+                        {% for error in individual_form.district.errors %}
+                        <small style="color: #CC0000;">{{ error }}</small>
+                        {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
                         {{ individual_form.password.label }}
                         {{ individual_form.password(class="form-control", placeholder="Min 8 characters") }}
                         {% if individual_form.password.errors %}
@@ -287,54 +317,62 @@
         document.querySelector('[data-tab="business"]').click();
     }
 
-    // Dynamic State/District Loading for Business Form
-    const stateSelect = document.getElementById('state-select');
-    const districtSelect = document.getElementById('district-select');
+    // Dynamic State/District Loading
+    function setupLocationSelects(stateId, districtId) {
+        const stateSelect = document.getElementById(stateId);
+        const districtSelect = document.getElementById(districtId);
 
-    if (stateSelect && districtSelect) {
-        // Load states when page loads
-        fetch('/api/states')
-            .then(res => res.json())
-            .then(data => {
-                if (data.states) {
-                    // Clear existing options except the first one
-                    stateSelect.innerHTML = '<option value="">Select State</option>';
-
-                    // Add state options
-                    data.states.forEach(state => {
-                        const option = document.createElement('option');
-                        option.value = state;
-                        option.textContent = state;
-                        stateSelect.appendChild(option);
-                    });
-                }
-            })
-            .catch(err => console.error('Error loading states:', err));
-
-        // Load districts when state changes
-        stateSelect.addEventListener('change', function () {
-            const selectedState = this.value;
-
-            // Clear district dropdown
-            districtSelect.innerHTML = '<option value="">Select District</option>';
-
-            if (!selectedState) return;
-
-            // Load districts for selected state
-            fetch(`/api/districts?state=${encodeURIComponent(selectedState)}`)
+        if (stateSelect && districtSelect) {
+            // Load states when page loads
+            fetch('/api/states')
                 .then(res => res.json())
                 .then(data => {
-                    if (data.districts) {
-                        data.districts.forEach(district => {
+                    if (data.states) {
+                        // Clear existing options except the first one
+                        stateSelect.innerHTML = '<option value="">Select State</option>';
+
+                        // Add state options
+                        data.states.forEach(state => {
                             const option = document.createElement('option');
-                            option.value = district;
-                            option.textContent = district;
-                            districtSelect.appendChild(option);
+                            option.value = state;
+                            option.textContent = state;
+                            stateSelect.appendChild(option);
                         });
                     }
                 })
-                .catch(err => console.error('Error loading districts:', err));
-        });
+                .catch(err => console.error('Error loading states:', err));
+
+            // Load districts when state changes
+            stateSelect.addEventListener('change', function () {
+                const selectedState = this.value;
+
+                // Clear district dropdown
+                districtSelect.innerHTML = '<option value="">Select District</option>';
+
+                if (!selectedState) return;
+
+                // Load districts for selected state
+                fetch(`/api/districts?state=${encodeURIComponent(selectedState)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.districts) {
+                            data.districts.forEach(district => {
+                                const option = document.createElement('option');
+                                option.value = district;
+                                option.textContent = district;
+                                districtSelect.appendChild(option);
+                            });
+                        }
+                    })
+                    .catch(err => console.error('Error loading districts:', err));
+            });
+        }
     }
+
+    // Setup for Business Form
+    setupLocationSelects('state-select', 'district-select');
+
+    // Setup for Individual Form
+    setupLocationSelects('individual-state-select', 'individual-district-select');
 </script>
 {% endblock %}

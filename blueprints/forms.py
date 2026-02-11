@@ -22,6 +22,22 @@ class IndividualSignupForm(FlaskForm):
         DataRequired(message='Password is required'),
         Length(min=8, message='Password must be at least 8 characters')
     ])
+    country = SelectField('Country', validators=[
+        DataRequired(message='Country is required')
+    ], choices=[
+        ('', 'Select Country'),
+        ('india', 'India')
+    ])
+    state = SelectField('State', 
+        validators=[Optional()],
+        choices=[('', 'Select State')],
+        validate_choice=False  # Dynamically populated via JavaScript
+    )
+    district = SelectField('District',
+        validators=[Optional()],
+        choices=[('', 'Select District')],
+        validate_choice=False  # Dynamically populated via JavaScript
+    )
 
 class BusinessSignupForm(FlaskForm):
     """Signup form for Business users"""
@@ -110,7 +126,7 @@ class ProfileEditForm(FlaskForm):
     ])
     profile_tag = StringField('Profile Tag', validators=[
         Optional(),
-        Length(max=32)
+        Length(max=255)
     ])
     tagline = StringField('Tagline', validators=[
         Optional(),

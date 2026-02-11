@@ -5,11 +5,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ user.full_name or user.username }} - Pehchaan</title>
-    <!-- Custom Redesign CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/profile_redesign.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
+    <style>
+        .hidden {
+            display: none !important;
+        }
+    </style>
 </head>
 
 <body>
+    <!-- Flash Messages (Fixed Top) -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div
+        style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; width: 90%; max-width: 600px;">
+        {% for category, message in messages %}
+        <div class="alert"
+            style="padding: 16px 24px; margin-bottom: 12px; border-radius: 50px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; background-color: #FBF8CC; color: #1a1a1a; border: 2px solid #1a1a1a; font-family: 'Instrument Serif', serif; font-size: 1.2rem;">
+            <span>{{ message }}</span>
+            <button onclick="this.parentElement.remove()"
+                style="background: none; border: none; font-size: 24px; cursor: pointer; color: inherit; line-height: 1; margin-left: 12px;">&times;</button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
 
     <!-- Navigation -->
     <nav class="profile-nav">
@@ -44,6 +65,77 @@
     <div class="banner-section" style="background: linear-gradient(135deg, var(--yellow-bg), var(--green-bg));"></div>
     {% endif %}
 
+    <!-- Share Modal -->
+    <div class="modal-overlay hidden" id="share-modal"
+        style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 1000; display: flex; align-items: center; justify-content: center;"
+        onclick="closeShareModal()">
+        <div class="card"
+            style="max-width: 400px; width: 90%; padding: 32px; border-radius: 24px; background: #fff; position: relative;"
+            onclick="event.stopPropagation()">
+            <button onclick="closeShareModal()"
+                style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 28px; cursor: pointer; line-height: 1;">&times;</button>
+
+            <h3 style="text-align: center; margin-bottom: 24px; font-size: 2rem;">Share Profile</h3>
+
+            <!-- QR Code -->
+            <div style="text-align: center; margin-bottom: 24px;">
+                <img src="{{ url_for('static', filename='qr_codes/' + user.username + '.png') }}"
+                    style="width: 180px; height: 180px; border: 2px solid var(--text-primary); border-radius: 12px; padding: 8px;">
+            </div>
+
+            <!-- Copy Link -->
+            <div style="display: flex; gap: 8px; margin-bottom: 24px;">
+                <input type="text" id="share-url" value="{{ request.url_root }}{{ user.username }}" readonly
+                    style="width: 100%; padding: 12px; border: 2px solid var(--text-primary); border-radius: 8px; font-family: var(--font-sans); font-size: 1rem;">
+                <button onclick="copyShareLink()" class="btn modal-copy-btn">Copy</button>
+            </div>
+
+            <!-- Social Links -->
+            <!-- Social Links -->
+            <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                <button onclick="copyShareLink()" title="Copy Link for Instagram" class="social-btn"
+                    style="background: #fff; border: 2px solid var(--text-primary); width: 50px; height: 50px; border-radius: 50%; font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;">
+                    <i class="ri-instagram-line"></i>
+                </button>
+                <a href="https://wa.me/?text=Check out {{ user.full_name or user.username }}'s profile: {{ request.url_root }}{{ user.username }}"
+                    target="_blank" title="Share on WhatsApp"
+                    style="background: #fff; border: 2px solid var(--text-primary); width: 50px; height: 50px; border-radius: 50%; font-size: 1.5rem; color: var(--text-primary); display: flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.2s ease;"
+                    onmouseover="this.style.background='var(--green-bg)'; this.style.transform='translate(-2px, -2px)'; this.style.boxShadow='2px 2px 0 var(--text-primary)'"
+                    onmouseout="this.style.background='#fff'; this.style.transform='none'; this.style.boxShadow='none'">
+                    <i class="ri-whatsapp-line"></i>
+                </a>
+                <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.url_root }}{{ user.username }}"
+                    target="_blank" title="Share on Facebook"
+                    style="background: #fff; border: 2px solid var(--text-primary); width: 50px; height: 50px; border-radius: 50%; font-size: 1.5rem; color: var(--text-primary); display: flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.2s ease;"
+                    onmouseover="this.style.background='var(--green-bg)'; this.style.transform='translate(-2px, -2px)'; this.style.boxShadow='2px 2px 0 var(--text-primary)'"
+                    onmouseout="this.style.background='#fff'; this.style.transform='none'; this.style.boxShadow='none'">
+                    <i class="ri-facebook-circle-line"></i>
+                </a>
+                <a href="https://twitter.com/intent/tweet?text=Check out {{ user.full_name or user.username }}'s profile&url={{ request.url_root }}{{ user.username }}"
+                    target="_blank" title="Share on Twitter"
+                    style="background: #fff; border: 2px solid var(--text-primary); width: 50px; height: 50px; border-radius: 50%; font-size: 1.5rem; color: var(--text-primary); display: flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.2s ease;"
+                    onmouseover="this.style.background='var(--green-bg)'; this.style.transform='translate(-2px, -2px)'; this.style.boxShadow='2px 2px 0 var(--text-primary)'"
+                    onmouseout="this.style.background='#fff'; this.style.transform='none'; this.style.boxShadow='none'">
+                    <i class="ri-twitter-x-line"></i>
+                </a>
+                <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ request.url_root }}{{ user.username }}"
+                    target="_blank" title="Share on LinkedIn"
+                    style="background: #fff; border: 2px solid var(--text-primary); width: 50px; height: 50px; border-radius: 50%; font-size: 1.5rem; color: var(--text-primary); display: flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.2s ease;"
+                    onmouseover="this.style.background='var(--green-bg)'; this.style.transform='translate(-2px, -2px)'; this.style.boxShadow='2px 2px 0 var(--text-primary)'"
+                    onmouseout="this.style.background='#fff'; this.style.transform='none'; this.style.boxShadow='none'">
+                    <i class="ri-linkedin-box-line"></i>
+                </a>
+                <a href="mailto:?subject=Check out {{ user.full_name or user.username }}'s profile&body=Check out this profile: {{ request.url_root }}{{ user.username }}"
+                    title="Share via Email"
+                    style="background: #fff; border: 2px solid var(--text-primary); width: 50px; height: 50px; border-radius: 50%; font-size: 1.5rem; color: var(--text-primary); display: flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.2s ease;"
+                    onmouseover="this.style.background='var(--green-bg)'; this.style.transform='translate(-2px, -2px)'; this.style.boxShadow='2px 2px 0 var(--text-primary)'"
+                    onmouseout="this.style.background='#fff'; this.style.transform='none'; this.style.boxShadow='none'">
+                    <i class="ri-mail-send-line"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
     <!-- Hero Section -->
     <section class="hero-section">
         <div class="hero-content">
@@ -64,9 +156,21 @@
                 <span>{{ user.profile_tag or 'Creative' }}</span> based in
                 <span>{{ user.location or 'the World' }}</span>.
                 {% if user.tagline %}
-                <div style="font-size: 1.2rem; margin-top: 1rem; font-family: var(--font-sans); opacity: 0.8;">{{
+                <div style="font-size: 1.6rem; margin-top: 1rem; font-family: var(--font-sans); opacity: 0.8;">{{
                     user.tagline }}</div>
                 {% endif %}
+
+                <!-- Resume & Share Buttons -->
+                <div style="display: flex; gap: 16px; margin-top: 32px; flex-wrap: wrap;">
+                    {% if user.resume_pdf %}
+                    <a href="{{ url_for('static', filename='uploads/' + user.resume_pdf) }}" download class="hero-btn">
+                        Download Resume
+                    </a>
+                    {% endif %}
+                    <button onclick="openShareModal()" class="hero-btn hero-btn-primary">
+                        Share Profile
+                    </button>
+                </div>
             </div>
         </div>
     </section>
@@ -86,11 +190,26 @@
         {% if user.skills %}
         <div style="margin-bottom: 4rem; ">
             <h3 style="font-size: 2rem; margin-bottom: 1.5rem; text-transform: uppercase;">Skills & Expertise</h3>
-            <div class="skills-grid">
-                {% for skill in user.skills %}
-                <div class="skill-pill">{{ skill.name }}</div>
-                {% endfor %}
+
+            {% set skills_by_category = {} %}
+            {% for skill in user.skills %}
+            {% set category = skill.category or 'Other Skills' %}
+            {% if category not in skills_by_category %}
+            {% set _ = skills_by_category.update({category: []}) %}
+            {% endif %}
+            {% set _ = skills_by_category[category].append(skill.name) %}
+            {% endfor %}
+
+            {% for category, skills in skills_by_category.items() %}
+            <div style="margin-bottom: 2rem;">
+                <h4 style="font-size: 1.3rem; font-family: var(--font-sans); font-weight: 600; margin-bottom: 0.8rem;">
+                    {{ category }}
+                </h4>
+                <div style="font-family: var(--font-sans); font-size: 1.1rem; opacity: 0.9;">
+                    {{ skills | join(', ') }}
+                </div>
             </div>
+            {% endfor %}
         </div>
         {% endif %}
 
@@ -107,6 +226,15 @@
                         <div class="exp-role">{{ exp.role }}</div>
                         <p style="font-family: var(--font-sans); margin-top: 1rem; line-height: 1.6; opacity: 0.8;">{{
                             exp.description }}</p>
+                        {% if exp.links %}
+                        <div style="margin-top: 0.5rem; font-weight: 600;">
+                            {% for link in exp.links %}
+                            <a href="{{ link.url }}" target="_blank"
+                                style="margin-right: 1rem; color: var(--text-primary); text-decoration: none;">{{
+                                link.label }} ↗</a>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
 
                         <!-- {% if exp.youtube_id %}
                         <div
@@ -152,10 +280,10 @@
                     {{ project.technologies.split(',') | join(' / ') }}
                     {% endif %}
                 </div>
-                <h3 class="project-title">{{ project.title }}</h3>
+                <h3 class="project-title" style="font-size: 2rem;">{{ project.title }}</h3>
                 <p style="font-family: var(--font-sans); opacity: 0.8;">{{ project.description }}</p>
                 <div style="margin-top: 1rem; font-weight: 600;">
-                    {% if project.demo_url %}<a href="{{ project.demo_url }}" target="_blank"
+                    {% if project.live_demo_url %}<a href="{{ project.live_demo_url }}" target="_blank"
                         style="margin-right: 1rem; color: var(--text-primary);">LIVE SITE ↗</a>{% endif %}
                     {% if project.github_url %}<a href="{{ project.github_url }}" target="_blank"
                         style="color: var(--text-primary);">GITHUB ↗</a>{% endif %}
@@ -211,6 +339,15 @@
                 <p>{{ item.description }}</p>
                 {% if item.achieved_date %}
                 <div style="font-style: italic; margin-top: 0.5rem;">{{ item.achieved_date }}</div>
+                {% endif %}
+                {% if item.links %}
+                <div style="margin-top: 0.5rem; font-weight: 600;">
+                    {% for link in item.links %}
+                    <a href="{{ link.url }}" target="_blank"
+                        style="margin-right: 1rem; color: var(--text-primary); text-decoration: none;">{{ link.label }}
+                        ↗</a>
+                    {% endfor %}
+                </div>
                 {% endif %}
             </div>
             {% endfor %}
@@ -365,17 +502,40 @@
             }
         }
 
+        // Share Modal Functions
+        function openShareModal() {
+            document.getElementById('share-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeShareModal() {
+            document.getElementById('share-modal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        function copyShareLink() {
+            const input = document.getElementById('share-url');
+            input.select();
+            document.execCommand('copy');
+
+            // Show temporary feedback
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.textContent = 'Copied!';
+            setTimeout(() => {
+                btn.textContent = originalText;
+            }, 2000);
+        }
+
         // Keyboard navigation
         document.addEventListener('keydown', function (event) {
-            const lightbox = document.getElementById('galleryLightbox');
-            if (lightbox && lightbox.style.display === 'flex') {
-                if (event.key === 'Escape') {
-                    closeGalleryLightbox();
-                } else if (event.key === 'ArrowLeft') {
-                    navigateGallery(-1);
-                } else if (event.key === 'ArrowRight') {
-                    navigateGallery(1);
-                }
+            if (event.key === 'Escape') {
+                closeGalleryLightbox();
+                closeShareModal();
+            } else if (event.key === 'ArrowLeft') {
+                navigateGallery(-1);
+            } else if (event.key === 'ArrowRight') {
+                navigateGallery(1);
             }
         });
     </script>

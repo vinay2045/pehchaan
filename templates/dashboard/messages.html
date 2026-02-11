@@ -3,7 +3,18 @@
 {% block title %}Messages - Dashboard{% endblock %}
 
 {% block dashboard_content %}
-<h1 style="margin-bottom: var(--space-md);">Messages Inbox</h1>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-md);">
+    <h1>Messages Inbox</h1>
+    {% if messages %}
+    <form action="{{ url_for('dashboard.delete_all_messages') }}" method="POST"
+        onsubmit="return confirm('Are you sure you want to delete ALL messages? This cannot be undone.');">
+        <button type="submit" class="btn btn-outline"
+            style="color: #dc3545; border-color: #dc3545; background: transparent;">
+            Delete All Messages
+        </button>
+    </form>
+    {% endif %}
+</div>
 
 <!-- Messages Table -->
 <div class="card">
@@ -70,13 +81,13 @@
 <script>
     const messagesData = {
     {% for message in messages %}
-    {{message.id}}: {
-        subject: {{message.subject | tojson}},
-        senderName: {{message.name | tojson}},
-        senderEmail: {{message.email | tojson}},
-        senderPhone: {{(message.phone or '') | tojson}},
-        message: {{message.message | tojson}},
-        createdAt: {{message.created_at.strftime('%B %d, %Y at %I:%M %p') | tojson}}
+    { { message.id } }: {
+        subject: { { message.subject | tojson } },
+        senderName: { { message.name | tojson } },
+        senderEmail: { { message.email | tojson } },
+        senderPhone: { { (message.phone or '') | tojson } },
+        message: { { message.message | tojson } },
+        createdAt: { { message.created_at.strftime('%B %d, %Y at %I:%M %p') | tojson } }
     } {% if not loop.last %}, {% endif %}
     {% endfor %}
 };

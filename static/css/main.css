@@ -17,22 +17,22 @@
   --color-white: #FFFFFF;
   --color-cream: #FFFEF9;
   --color-black: #000000;
-  
+
   /* Text Colors */
   --text-primary: #000000;
   --text-secondary: #4A4A4A;
   --text-muted: #757575;
   --text-white: #FFFFFF;
-  
+
   /* Background Colors */
   --bg-main: #FFFEF9;
   --bg-card: #FFFFFF;
   --bg-card-alt: #F5F5F5;
-  
+
   /* Border Colors */
   --border-color: #E0E0E0;
   --border-dark: #000000;
-  
+
   /* Border Radius */
   --radius-xs: 4px;
   --radius-sm: 8px;
@@ -41,7 +41,7 @@
   --radius-xl: 32px;
   --radius-full: 50px;
   --radius-circle: 50%;
-  
+
   /* Spacing System (8px base) */
   --space-xs: 8px;
   --space-sm: 16px;
@@ -50,7 +50,7 @@
   --space-xl: 48px;
   --space-2xl: 64px;
   --space-3xl: 96px;
-  
+
   /* Typography */
   --font-family: 'Instrument Serif', serif;
   --font-size-xs: 12px;
@@ -62,13 +62,13 @@
   --font-size-3xl: 36px;
   --font-size-4xl: 48px;
   --font-size-5xl: 64px;
-  
+
   /* Line Heights */
   --line-height-tight: 1.2;
   --line-height-normal: 1.5;
   --line-height-relaxed: 1.6;
   --line-height-loose: 1.8;
-  
+
   /* Transitions */
   --transition-fast: 0.15s ease;
   --transition-normal: 0.2s ease;
@@ -98,7 +98,12 @@ body {
 }
 
 /* === TYPOGRAPHY === */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-family);
   font-weight: 400;
   line-height: var(--line-height-tight);
@@ -121,7 +126,8 @@ h4 {
   font-size: var(--font-size-xl);
 }
 
-h5, h6 {
+h5,
+h6 {
   font-size: var(--font-size-lg);
 }
 
@@ -190,7 +196,8 @@ a:hover {
   border-color: var(--color-black);
 }
 
-.btn-outline:hover {
+.btn-outline:hover,
+.btn-outline.active {
   background-color: var(--color-black);
   color: var(--text-white);
   opacity: 1;
@@ -517,29 +524,81 @@ textarea {
 }
 
 /* === UTILITIES === */
-.text-center { text-align: center; }
-.text-left { text-align: left; }
-.text-right { text-align: right; }
+.text-center {
+  text-align: center;
+}
 
-.fw-normal { font-weight: 400; }
-.fw-bold { font-weight: 700; }
+.text-left {
+  text-align: left;
+}
 
-.mt-0 { margin-top: 0; }
-.mt-sm { margin-top: var(--space-sm); }
-.mt-md { margin-top: var(--space-md); }
-.mt-lg { margin-top: var(--space-lg); }
-.mt-xl { margin-top: var(--space-xl); }
+.text-right {
+  text-align: right;
+}
 
-.mb-0 { margin-bottom: 0; }
-.mb-sm { margin-bottom: var(--space-sm); }
-.mb-md { margin-bottom: var(--space-md); }
-.mb-lg { margin-bottom: var(--space-lg); }
-.mb-xl { margin-bottom: var(--space-xl); }
+.fw-normal {
+  font-weight: 400;
+}
 
-.p-0 { padding: 0; }
-.p-sm { padding: var(--space-sm); }
-.p-md { padding: var(--space-md); }
-.p-lg { padding: var(--space-lg); }
+.fw-bold {
+  font-weight: 700;
+}
+
+.mt-0 {
+  margin-top: 0;
+}
+
+.mt-sm {
+  margin-top: var(--space-sm);
+}
+
+.mt-md {
+  margin-top: var(--space-md);
+}
+
+.mt-lg {
+  margin-top: var(--space-lg);
+}
+
+.mt-xl {
+  margin-top: var(--space-xl);
+}
+
+.mb-0 {
+  margin-bottom: 0;
+}
+
+.mb-sm {
+  margin-bottom: var(--space-sm);
+}
+
+.mb-md {
+  margin-bottom: var(--space-md);
+}
+
+.mb-lg {
+  margin-bottom: var(--space-lg);
+}
+
+.mb-xl {
+  margin-bottom: var(--space-xl);
+}
+
+.p-0 {
+  padding: 0;
+}
+
+.p-sm {
+  padding: var(--space-sm);
+}
+
+.p-md {
+  padding: var(--space-md);
+}
+
+.p-lg {
+  padding: var(--space-lg);
+}
 
 /* === MOBILE RESPONSIVE === */
 @media (max-width: 768px) {
@@ -548,43 +607,43 @@ textarea {
     --font-size-3xl: 28px;
     --font-size-2xl: 24px;
   }
-  
+
   .container {
     padding: 0 var(--space-sm);
   }
-  
+
   .section {
     padding: var(--space-lg) 0;
   }
-  
+
   .bento-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .bento-item-wide,
   .bento-item-tall {
     grid-column: span 1;
     grid-row: span 1;
   }
-  
+
   .navbar-nav {
     flex-direction: column;
     gap: var(--space-sm);
   }
-  
+
   .footer-content {
     grid-template-columns: 1fr;
   }
-  
+
   .btn-large {
     padding: 14px 32px;
     font-size: var(--font-size-base);
   }
-  
+
   h1 {
     font-size: var(--font-size-3xl);
   }
-  
+
   h2 {
     font-size: var(--font-size-2xl);
   }
@@ -595,7 +654,7 @@ textarea {
     padding: 10px 24px;
     font-size: var(--font-size-sm);
   }
-  
+
   .img-profile {
     width: 100px;
     height: 100px;

@@ -33,7 +33,7 @@ class User(UserMixin, db.Model):
     full_name = db.Column(db.String(100), nullable=True)
     profile_image = db.Column(db.String(255), nullable=True)
     banner_image = db.Column(db.String(255), nullable=True)
-    profile_tag = db.Column(db.String(32), nullable=True)
+    profile_tag = db.Column(db.String(255), nullable=True)
     tagline = db.Column(db.String(150), nullable=True)
     bio = db.Column(db.Text, nullable=True)
     resume_pdf = db.Column(db.String(255), nullable=True)
@@ -83,6 +83,8 @@ class Skill(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     name = db.Column(db.String(50), nullable=False)
+    category = db.Column(db.String(100), nullable=True)  # Category for grouping skills
+    experience_duration = db.Column(db.String(50), nullable=True)  # e.g., "2 years", "6 months"
     order = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
