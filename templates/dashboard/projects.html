@@ -125,9 +125,12 @@
             </div>
 
             <div class="form-group">
-                <label class="form-label">Project Images (max 10)</label>
-                <input type="file" name="images" id="project-images" class="form-control" accept="image/*" multiple>
-                <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">Select up to 10 images</p>
+                <div class="form-group">
+                    <label class="form-label">Project Image (Optional)</label>
+                    <input type="file" name="images" id="project-images" class="form-control" accept="image/*">
+                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">Select one image to represent
+                        your project</p>
+                </div>
             </div>
 
             <div style="display: flex; gap: 12px; margin-top: var(--space-md);">
@@ -190,5 +193,28 @@
             closeProjectModal();
         }
     });
+
+    // Mutual exclusion: YouTube OR Image
+    const youtubeInput = document.getElementById('project-youtube-url');
+    const imageInput = document.getElementById('project-images');
+
+    youtubeInput.addEventListener('input', function () {
+        if (this.value.trim()) {
+            imageInput.disabled = true;
+            imageInput.value = '';
+        } else {
+            imageInput.disabled = false;
+        }
+    });
+
+    imageInput.addEventListener('change', function () {
+        if (this.files.length > 0) {
+            youtubeInput.disabled = true;
+            youtubeInput.value = '';
+        } else {
+            youtubeInput.disabled = false;
+        }
+    });
+
 </script>
 {% endblock %}

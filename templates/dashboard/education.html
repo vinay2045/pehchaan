@@ -1,0 +1,152 @@
+{% extends "dashboard/base_dashboard.html" %}
+
+{% block title %}Education - Dashboard{% endblock %}
+
+{% block dashboard_content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-md);">
+    <h1>Manage Education</h1>
+    <button class="btn btn-primary" onclick="openAddEduModal()">+ Add Education</button>
+</div>
+
+<!-- Education List -->
+<div id="edu-container" class="bento-grid">
+    {% for edu in education_items %}
+    <div class="card" data-edu-id="{{ edu.id }}">
+        <h3>{{ edu.course }}</h3>
+        <p style="color: var(--text-secondary); margin: 4px 0; font-weight: 500;">{{ edu.institute_name }}</p>
+
+        {% if edu.start_date %}
+        <p style="color: var(--text-muted); font-size: 0.9em; margin: 4px 0;">
+            📅 {{ edu.start_date }} - {{ edu.end_date if edu.end_date else 'Present' }}
+        </p>
+        {% endif %}
+
+        {% if edu.grade %}
+        <p style="color: var(--text-muted); font-size: 0.9em; margin: 4px 0;">
+            🎓 Grade/CGPA: {{ edu.grade }}
+        </p>
+        {% endif %}
+
+        {% if edu.description %}
+        <p style="color: var(--text-muted); margin: 12px 0; white-space: pre-wrap;">{{ edu.description }}</p>
+        {% endif %}
+
+        <div style="display: flex; gap: 12px; margin-top: 16px;">
+            <button class="btn btn-small btn-outline" onclick="editEdu({{ edu.id }})">Edit</button>
+            <button class="btn btn-small btn-outline" style="color: #dc3545;"
+                onclick="deleteEdu({{ edu.id }})">Delete</button>
+        </div>
+    </div>
+    {% else %}
+    <div class="card" style="text-align: center; padding: var(--space-xl); grid-column: 1 / -1;">
+        <p style="color: var(--text-muted);">No education added yet. Click "Add Education" to get started!</p>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Add/Edit Education Modal -->
+<div class="modal-overlay" id="edu-modal" style="display: none;" onclick="closeEduModal()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <h2 id="modal-title">Add Education</h2>
+        <form method="POST" action="{{ url_for('dashboard.add_education') }}" id="edu-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="edu_id" id="edu-id">
+
+            <div class="form-group">
+                <label class="form-label">Course / Degree</label>
+                <input type="text" name="course" id="edu-course" class="form-control" required
+                    placeholder="e.g., B.Tech in Computer Science">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Institute Name</label>
+                <input type="text" name="institute_name" id="edu-institute" class="form-control" required
+                    placeholder="e.g., Indian Institute of Technology">
+            </div>
+
+            <div class="form-group" style="display: flex; gap: 12px;">
+                <div style="flex: 1;">
+                    <label class="form-label">Start Date</label>
+                    <input type="text" name="start_date" id="edu-start-date" class="form-control"
+                        placeholder="e.g., 2020">
+                </div>
+                <div style="flex: 1;">
+                    <label class="form-label">End Date</label>
+                    <input type="text" name="end_date" id="edu-end-date" class="form-control" placeholder="e.g., 2024">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Grade / Percentage / CGPA</label>
+                <input type="text" name="grade" id="edu-grade" class="form-control" placeholder="e.g., 9.5 CGPA or 90%">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Description (Optional)</label>
+                <textarea name="description" id="edu-description" class="form-control" rows="4"
+                    placeholder="Describe your achievements, major, etc."></textarea>
+            </div>
+
+            <div style="display: flex; gap: 12px; margin-top: var(--space-md);">
+                <button type="submit" class="btn btn-primary">Save Education</button>
+                <button type="button" class="btn btn-outline" onclick="closeEduModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function openAddEduModal() {
+        document.getElementById('modal-title').textContent = 'Add Education';
+        document.getElementById('edu-form').action = '{{ url_for("dashboard.add_education") }}';
+        document.getElementById('edu-form').reset();
+        document.getElementById('edu-id').value = '';
+        document.getElementById('edu-modal').style.display = 'flex';
+    }
+
+    function closeEduModal() {
+        document.getElementById('edu-modal').style.display = 'none';
+    }
+
+    function editEdu(eduId) {
+        fetch(`/dashboard/education/${eduId}`)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('modal-title').textContent = 'Edit Education';
+                document.getElementById('edu-form').action = '{{ url_for("dashboard.edit_education") }}';
+                document.getElementById('edu-id').value = data.id;
+                document.getElementById('edu-course').value = data.course;
+                document.getElementById('edu-institute').value = data.institute_name;
+                document.getElementById('edu-start-date').value = data.start_date || '';
+                document.getElementById('edu-end-date').value = data.end_date || 'Present';
+                document.getElementById('edu-grade').value = data.grade || '';
+                document.getElementById('edu-description').value = data.description || '';
+
+                document.getElementById('edu-modal').style.display = 'flex';
+            });
+    }
+
+    function deleteEdu(eduId) {
+        if (!confirm('Are you sure you want to delete this education entry?')) return;
+
+        fetch(`/dashboard/education/${eduId}/delete`, { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error deleting education');
+                }
+            });
+    }
+
+    // Close modal on ESC
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            closeEduModal();
+        }
+    });
+</script>
+{% endblock %}

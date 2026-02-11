@@ -24,6 +24,16 @@ def view_profile(username):
     else:
         return render_template('public/business_profile.html', user=user)
 
+@profile_bp.after_request
+def add_header(response):
+    """Add headers to both force latest IE rendering engine or Chrome Frame,
+    and also to cache the rendered page for 10 minutes."""
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    response.headers['Cache-Control'] = 'public, max-age=0'
+    return response
+
 @profile_bp.route('/<username>/contact', methods=['POST'])
 @limiter.limit("3 per 15 minutes")
 def contact(username):

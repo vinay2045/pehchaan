@@ -60,6 +60,7 @@ class User(UserMixin, db.Model):
     projects = db.relationship('Project', backref='user', lazy=True, cascade='all, delete-orphan', order_by='Project.order')
     experiences = db.relationship('Experience', backref='user', lazy=True, cascade='all, delete-orphan', order_by='Experience.order')
     gallery_images = db.relationship('GalleryImage', backref='user', lazy=True, cascade='all, delete-orphan', order_by='GalleryImage.order')
+    education = db.relationship('Education', backref='user', lazy=True, cascade='all, delete-orphan', order_by='Education.order')
     others = db.relationship('Other', backref='user', lazy=True, cascade='all, delete-orphan', order_by='Other.order')
     services = db.relationship('Service', backref='user', lazy=True, cascade='all, delete-orphan', order_by='Service.order')
     previous_works = db.relationship('PreviousWork', backref='user', lazy=True, cascade='all, delete-orphan', order_by='PreviousWork.order')
@@ -255,6 +256,21 @@ class ExperienceLink(db.Model):
     label = db.Column(db.String(50), nullable=False)
     url = db.Column(db.String(255), nullable=False)
     order = db.Column(db.Integer, default=0)
+
+class Education(db.Model):
+    """Education history for Individual users"""
+    __tablename__ = 'education'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    institute_name = db.Column(db.String(100), nullable=False)
+    course = db.Column(db.String(100), nullable=False) # e.g. BTech, MTech, School
+    start_date = db.Column(db.String(50), nullable=True)
+    end_date = db.Column(db.String(50), nullable=True)
+    grade = db.Column(db.String(50), nullable=True) # Percentage or CGPA
+    description = db.Column(db.Text, nullable=True)
+    order = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 class GalleryImage(db.Model):
     """Gallery images for users"""

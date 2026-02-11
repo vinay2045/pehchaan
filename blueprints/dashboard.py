@@ -23,6 +23,7 @@ def profile():
     form = ProfileEditForm()
     
     if form.validate_on_submit():
+        print(f"DEBUG: Profile Update Form Valid. Data: {form.data}")
         # Handle file uploads first
         if form.profile_image.data:
             if current_user.profile_image:
@@ -100,6 +101,9 @@ def profile():
         form.tagline.data = current_user.tagline
         form.bio.data = current_user.bio
     
+    if form.errors:
+        print(f"DEBUG: Profile Form Errors: {form.errors}")
+    
     return render_template('dashboard/profile.html', form=form)
 
 # PROJECTS CRUD
@@ -140,11 +144,18 @@ def add_project():
     db.session.add(project)
     db.session.commit()
     
-    # Handle images
-    images = request.files.getlist('images')
-    for img in images[:10]:
-        if img and img.filename:
-            filename = handle_file_upload(img, 'projects', max_size=5*1024*1024)
+    # Handle media: YouTube OR Image
+    youtube_url = request.form.get('youtube_url')
+    
+    if youtube_url:
+        project.youtube_url = youtube_url
+        # Ignore images if YouTube URL is present
+    else:
+        project.youtube_url = None
+        # Handle single image
+        image = request.files.get('images') # Single file input
+        if image and image.filename:
+            filename = handle_file_upload(image, 'projects', max_size=5*1024*1024)
             if filename:
                 db.session.add(ProjectImage(project_id=project.id, image_path=filename))
     
@@ -174,6 +185,7 @@ def edit_project():
     from utils.file_handler import handle_file_upload
     
     project_id = request.form.get('project_id')
+    print(f"DEBUG: Editing Project ID: {project_id}")
     project = Project.query.filter_by(id=project_id, user_id=current_user.id).first_or_404()
     
     project.title = request.form.get('title')
@@ -187,10 +199,29 @@ def edit_project():
     if technologies:
         project._technologies = technologies
     
-    images = request.files.getlist('images')
-    for img in images[:10]:
-        if img and img.filename:
-            filename = handle_file_upload(img, 'projects', max_size=5*1024*1024)
+    # Handle media: YouTube OR Image
+    youtube_url = request.form.get('youtube_url')
+    
+    if youtube_url:
+        project.youtube_url = youtube_url
+        # Remove existing images if switching to YouTube
+        for img in project.images:
+            from utils.file_handler import delete_file
+            delete_file(img.image_path)
+            db.session.delete(img)
+    else:
+        project.youtube_url = None
+        # Handle new image upload
+        image = request.files.get('images')
+        if image and image.filename:
+            # Remove existing images to enforce single image policy
+            for img in project.images:
+                from utils.file_handler import delete_file
+                delete_file(img.image_path)
+                db.session.delete(img)
+            
+            # Save new image
+            filename = handle_file_upload(image, 'projects', max_size=5*1024*1024)
             if filename:
                 db.session.add(ProjectImage(project_id=project.id, image_path=filename))
     
@@ -234,20 +265,15 @@ def add_experience():
         position=request.form.get('position'),
         description=request.form.get('description'),
         start_date=request.form.get('start_date'),
-        end_date=request.form.get('end_date') or 'Present',
-        youtube_url=request.form.get('youtube_url')
+        end_date=request.form.get('end_date') or 'Present'
+        # youtube_url removed per user request
     )
     
     db.session.add(exp)
     db.session.commit()
     
-    # Handle images
-    images = request.files.getlist('images')
-    for idx, img in enumerate(images[:10]):
-        if img and img.filename:
-            filename = handle_file_upload(img, 'experience', max_size=5*1024*1024)
-            if filename:
-                db.session.add(ExperienceImage(experience_id=exp.id, image_path=filename, order=idx))
+    # Images removed per user request
+    # images = request.files.getlist('images') ...
     
     # Handle proof links
     idx = 0
@@ -285,6 +311,7 @@ def edit_experience():
     from utils.file_handler import handle_file_upload
     
     exp_id = request.form.get('exp_id')
+    print(f"DEBUG: Editing Experience ID: {exp_id}")
     exp = Experience.query.filter_by(id=exp_id, user_id=current_user.id).first_or_404()
     
     exp.company_name = request.form.get('company_name')
@@ -292,16 +319,9 @@ def edit_experience():
     exp.description = request.form.get('description')
     exp.start_date = request.form.get('start_date')
     exp.end_date = request.form.get('end_date') or 'Present'
-    exp.youtube_url = request.form.get('youtube_url')
+    # exp.youtube_url removed
     
-    # Handle new images
-    images = request.files.getlist('images')
-    current_image_count = len(exp.images)
-    for idx, img in enumerate(images[:10]):
-        if img and img.filename:
-            filename = handle_file_upload(img, 'experience', max_size=5*1024*1024)
-            if filename:
-                db.session.add(ExperienceImage(experience_id=exp.id, image_path=filename, order=current_image_count + idx))
+    # Images removed per user request
     
     # Update proof links - delete all and recreate
     ExperienceLink.query.filter_by(experience_id=exp.id).delete()
@@ -323,6 +343,87 @@ def delete_experience(exp_id):
     from models import Experience
     exp = Experience.query.filter_by(id=exp_id, user_id=current_user.id).first_or_404()
     db.session.delete(exp)
+    db.session.commit()
+    return jsonify({'success': True})
+
+    db.session.commit()
+    return jsonify({'success': True})
+
+@dashboard_bp.route('/education')
+@login_required
+def education():
+    from models import Education
+    if current_user.role != 'individual':
+        flash('This section is only for Individual accounts.', 'warning')
+        return redirect(url_for('dashboard.index'))
+    education_items = Education.query.filter_by(user_id=current_user.id).order_by(Education.order).all()
+    return render_template('dashboard/education.html', education_items=education_items)
+
+@dashboard_bp.route('/education/add', methods=['POST'])
+@login_required
+def add_education():
+    from models import Education
+    
+    edu = Education(
+        user_id=current_user.id,
+        institute_name=request.form.get('institute_name'),
+        course=request.form.get('course'),
+        start_date=request.form.get('start_date'),
+        end_date=request.form.get('end_date') or 'Present',
+        grade=request.form.get('grade'),
+        description=request.form.get('description')
+    )
+    
+    db.session.add(edu)
+    db.session.commit()
+    
+    flash('Education added successfully!', 'success')
+    return redirect(url_for('dashboard.education'))
+
+@dashboard_bp.route('/education/<int:edu_id>')
+@login_required
+def get_education(edu_id):
+    from models import Education
+    edu = Education.query.filter_by(id=edu_id, user_id=current_user.id).first_or_404()
+    return jsonify({
+        'id': edu.id,
+        'institute_name': edu.institute_name,
+        'course': edu.course,
+        'start_date': edu.start_date or '',
+        'end_date': edu.end_date or 'Present',
+        'grade': edu.grade or '',
+        'description': edu.description or ''
+    })
+
+@dashboard_bp.route('/education/edit', methods=['POST'])
+@login_required
+def edit_education():
+    from models import Education
+    
+    edu_id = request.form.get('edu_id')
+    print(f"DEBUG: Editing Education ID: {edu_id}")
+    print(f"DEBUG: Form Data: {request.form}")
+    
+    edu = Education.query.filter_by(id=edu_id, user_id=current_user.id).first_or_404()
+    print(f"DEBUG: Found Education Object: {edu}")
+    
+    edu.institute_name = request.form.get('institute_name')
+    edu.course = request.form.get('course')
+    edu.start_date = request.form.get('start_date')
+    edu.end_date = request.form.get('end_date') or 'Present'
+    edu.grade = request.form.get('grade')
+    edu.description = request.form.get('description')
+    
+    db.session.commit()
+    flash('Education updated successfully!', 'success')
+    return redirect(url_for('dashboard.education'))
+
+@dashboard_bp.route('/education/<int:edu_id>/delete', methods=['POST'])
+@login_required
+def delete_education(edu_id):
+    from models import Education
+    edu = Education.query.filter_by(id=edu_id, user_id=current_user.id).first_or_404()
+    db.session.delete(edu)
     db.session.commit()
     return jsonify({'success': True})
 
@@ -390,13 +491,19 @@ def add_other():
     db.session.add(item)
     db.session.commit()
     
-    # Handle images
-    images = request.files.getlist('images')
-    for idx, img in enumerate(images[:10]):
-        if img and img.filename:
-            filename = handle_file_upload(img, 'others', max_size=5*1024*1024)
+    # Handle media: YouTube OR Image
+    youtube_url = request.form.get('youtube_url')
+    
+    if youtube_url:
+        item.youtube_url = youtube_url
+    else:
+        item.youtube_url = None
+        # Handle single image
+        image = request.files.get('images')
+        if image and image.filename:
+            filename = handle_file_upload(image, 'others', max_size=5*1024*1024)
             if filename:
-                db.session.add(OtherImage(other_id=item.id, image_path=filename, order=idx))
+                db.session.add(OtherImage(other_id=item.id, image_path=filename))
     
     # Handle proof links
     idx = 0
@@ -432,6 +539,7 @@ def edit_other():
     from utils.file_handler import handle_file_upload
     
     item_id = request.form.get('item_id')
+    print(f"DEBUG: Editing Other ID: {item_id}")
     item = Other.query.filter_by(id=item_id, user_id=current_user.id).first_or_404()
     
     item.title = request.form.get('title')
@@ -439,14 +547,31 @@ def edit_other():
     item.achieved_date = request.form.get('achieved_date')
     item.youtube_url = request.form.get('youtube_url')
     
-    # Handle new images
-    images = request.files.getlist('images')
-    current_image_count = len(item.images)
-    for idx, img in enumerate(images[:10]):
-        if img and img.filename:
-            filename = handle_file_upload(img, 'others', max_size=5*1024*1024)
+    # Handle media: YouTube OR Image
+    youtube_url = request.form.get('youtube_url')
+    
+    if youtube_url:
+        item.youtube_url = youtube_url
+        # Remove existing images if switching to YouTube
+        for img in item.images:
+            from utils.file_handler import delete_file
+            delete_file(img.image_path)
+            db.session.delete(img)
+    else:
+        item.youtube_url = None
+        # Handle new image upload
+        image = request.files.get('images')
+        if image and image.filename:
+            # Remove existing images to enforce single image policy
+            for img in item.images:
+                from utils.file_handler import delete_file
+                delete_file(img.image_path)
+                db.session.delete(img)
+            
+            # Save new image
+            filename = handle_file_upload(image, 'others', max_size=5*1024*1024)
             if filename:
-                db.session.add(OtherImage(other_id=item.id, image_path=filename, order=current_image_count + idx))
+                db.session.add(OtherImage(other_id=item.id, image_path=filename))
     
     # Update proof links - delete all and recreate
     OtherLink.query.filter_by(other_id=item.id).delete()

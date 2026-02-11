@@ -118,7 +118,7 @@ class ProfileEditForm(FlaskForm):
     ])
     bio = TextAreaField('Bio', validators=[
         Optional(),
-        Length(max=500)
+        Length(max=2000)
     ])
     # File uploads
     profile_image = FileField('Profile Image', validators=[

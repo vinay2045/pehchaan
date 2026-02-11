@@ -27,6 +27,10 @@
                     <a href="{{ url_for('dashboard.experience') }}" class="nav-link"
                         style="display: block; padding: var(--space-xs);">Experience</a>
                 </li>
+                <li style="margin-bottom: var(--space-sm);">
+                    <a href="{{ url_for('dashboard.education') }}" class="nav-link"
+                        style="display: block; padding: var(--space-xs);">Education</a>
+                </li>
                 {% endif %}
 
                 {% if current_user.role == 'business' %}

@@ -93,9 +93,12 @@
             </div>
 
             <div class="form-group">
-                <label class="form-label">Images (Optional, max 10)</label>
-                <input type="file" name="images" id="item-images" class="form-control" accept="image/*" multiple>
-                <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">Select up to 10 images</p>
+                <div class="form-group">
+                    <label class="form-label">Achievement Image (Optional)</label>
+                    <input type="file" name="images" id="item-images" class="form-control" accept="image/*">
+                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">Select one image to represent
+                        your achievement</p>
+                </div>
             </div>
 
             <div class="form-group">
@@ -196,5 +199,28 @@
             closeItemModal();
         }
     });
+
+    // Mutual exclusion: YouTube OR Image
+    const youtubeInput = document.getElementById('item-youtube');
+    const imageInput = document.getElementById('item-images');
+
+    youtubeInput.addEventListener('input', function () {
+        if (this.value.trim()) {
+            imageInput.disabled = true;
+            imageInput.value = '';
+        } else {
+            imageInput.disabled = false;
+        }
+    });
+
+    imageInput.addEventListener('change', function () {
+        if (this.files.length > 0) {
+            youtubeInput.disabled = true;
+            youtubeInput.value = '';
+        } else {
+            youtubeInput.disabled = false;
+        }
+    });
+
 </script>
 {% endblock %}

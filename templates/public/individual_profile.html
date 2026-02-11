@@ -19,7 +19,19 @@
         </div>
         <div class="nav-links">
             <a href="#about">About</a>
+            {% if user.experiences %}
+            <a href="#experience">Experience</a>
+            {% endif %}
             <a href="#work">Work</a>
+            {% if user.education %}
+            <a href="#education">Education</a>
+            {% endif %}
+            {% if user.gallery_images %}
+            <a href="#gallery">Gallery</a>
+            {% endif %}
+            {% if user.others %}
+            <a href="#achievements">Achievements</a>
+            {% endif %}
             <a href="#contact">Contact</a>
         </div>
     </nav>
@@ -52,8 +64,8 @@
                 <span>{{ user.profile_tag or 'Creative' }}</span> based in
                 <span>{{ user.location or 'the World' }}</span>.
                 {% if user.tagline %}
-                <div style="font-size: 2rem; margin-top: 1rem; font-family: var(--font-sans); opacity: 0.8;">"{{
-                    user.tagline }}"</div>
+                <div style="font-size: 1.2rem; margin-top: 1rem; font-family: var(--font-sans); opacity: 0.8;">{{
+                    user.tagline }}</div>
                 {% endif %}
             </div>
         </div>
@@ -61,16 +73,18 @@
 
     <!-- About / Skills / Bio -->
     <section id="about" class="content-section bg-white">
-        <div class="section-header">
+        <div class="section-header-about"
+            style="margin-bottom: 3rem; display: flex; flex-direction: column; align-items: flex-start; ">
             <h2 class="section-title">About</h2>
             <div class="section-desc">
-                {{ user.bio or "A dedicated professional with a passion for creating impactful digital experiences." }}
+                {{ user.bio if user.bio else "A dedicated professional with a passion for creating impactful digital
+                experiences." }}
             </div>
         </div>
 
         <!-- Skills Grid -->
         {% if user.skills %}
-        <div style="margin-bottom: 4rem;">
+        <div style="margin-bottom: 4rem; ">
             <h3 style="font-size: 2rem; margin-bottom: 1.5rem; text-transform: uppercase;">Skills & Expertise</h3>
             <div class="skills-grid">
                 {% for skill in user.skills %}
@@ -82,7 +96,7 @@
 
         <!-- Experience Timeline -->
         {% if user.experiences %}
-        <div>
+        <div id="experience">
             <h3 style="font-size: 2rem; margin-bottom: 1.5rem; text-transform: uppercase;">Experience</h3>
             <div>
                 {% for exp in user.experiences %}
@@ -111,7 +125,7 @@
 
     <!-- Work Section -->
     <section id="work" class="work-section bg-green">
-        <div class="section-header">
+        <div class="section-header " style="padding: 0 3rem; margin-top: 4rem;">
             <h2 class="section-title">Work</h2>
             <div class="section-desc">Selected Projects</div>
         </div>
@@ -126,7 +140,8 @@
                         frameborder="0" allowfullscreen></iframe>
                     {% elif project.images %}
                     <img src="{{ url_for('static', filename='uploads/' + project.images[0].image_path) }}"
-                        alt="{{ project.title }}" class="project-image">
+                        alt="{{ project.title }}" class="project-image" style="cursor: pointer;"
+                        onclick="openLightbox(this.src)">
                     {% else %}
                     <div
                         style="width: 100%; height: 100%; background: #222; display: flex; align-items: center; justify-content: center; color: white;">
@@ -155,6 +170,26 @@
     </section>
 
     <!-- Achievements -->
+    {% if user.gallery_images %}
+    <section id="gallery" class="content-section bg-white">
+        <div class="section-header">
+            <h2 class="section-title">Gallery</h2>
+            <div class="section-desc">Snapshots & Highlights</div>
+        </div>
+        <div class="project-grid">
+            {% for image in user.gallery_images %}
+            <div class="project-card">
+                <div class="project-image-wrapper">
+                    <img src="{{ url_for('static', filename='uploads/' + image.image_path) }}" class="project-image"
+                        style="cursor: pointer;" onclick="openLightbox(this.src)">
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Achievements -->
     {% if user.others %}
     <section id="achievements" class="content-section" style="background-color: var(--yellow-bg);">
         <div class="section-header">
@@ -164,22 +199,50 @@
         <div class="project-grid">
             {% for item in user.others %}
             <div class="project-card">
-                {% if item.youtube_id %}
-                <div class="project-image-wrapper">
+                <div class="project-image-wrapper" style="--rotation: {{ range(-2, 2) | random }}deg;">
+                    {% if item.youtube_id %}
                     <iframe width="100%" height="100%" src="https://www.youtube.com/embed/{{ item.youtube_id }}"
                         frameborder="0" allowfullscreen></iframe>
-                </div>
-                {% elif item.images %}
-                <div class="project-image-wrapper">
+                    {% elif item.images %}
                     <img src="{{ url_for('static', filename='uploads/' + item.images[0].image_path) }}"
-                        class="project-image">
+                        class="project-image" style="cursor: pointer;" onclick="openLightbox(this.src)">
+                    {% endif %}
                 </div>
-                {% endif %}
                 <h3 class="project-title" style="font-size: 2rem;">{{ item.title }}</h3>
                 <p>{{ item.description }}</p>
                 {% if item.achieved_date %}
                 <div style="font-style: italic; margin-top: 0.5rem;">{{ item.achieved_date }}</div>
                 {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Education -->
+    {% if user.education %}
+    <section id="education" class="content-section"
+        style="background-color: #FFDD00; border-top: 2px solid var(--text-primary);">
+        <div class="section-header">
+            <h2 class="section-title">Education</h2>
+            <div class="section-desc">Academic Background</div>
+        </div>
+        <div>
+            {% for edu in user.education %}
+            <div class="experience-item"
+                style="border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 2rem; margin-bottom: 2rem;">
+                <div class="exp-date">{{ edu.start_date }} - {{ edu.end_date or 'Present' }}</div>
+                <div>
+                    <div class="exp-company" style="font-size: 1.5rem; font-weight: 700;">{{ edu.course }}</div>
+                    <div class="exp-role">{{ edu.institute_name }}</div>
+                    {% if edu.grade %}
+                    <div style="font-weight: 600; margin-top: 0.5rem;">Grade: {{ edu.grade }}</div>
+                    {% endif %}
+                    {% if edu.description %}
+                    <p style="font-family: var(--font-sans); margin-top: 1rem; line-height: 1.6; opacity: 0.8;">{{
+                        edu.description }}</p>
+                    {% endif %}
+                </div>
             </div>
             {% endfor %}
         </div>
@@ -242,11 +305,46 @@
         </div>
     </section>
 
-    <!-- Floating Branding -->
-    <a href="https://pehchaan.com"
-        style="position: fixed; bottom: 2rem; left: 2rem; background: var(--text-primary); color: white; padding: 0.8rem 1.5rem; border-radius: 50px; text-decoration: none; font-weight: 600; font-family: var(--font-sans); z-index: 1000; box-shadow: 4px 4px 0px rgba(0,0,0,0.2);">
-        🆔 Pehchaan
-    </a>
+    <!-- Lightbox Modal -->
+    <div id="lightboxModal" class="lightbox" onclick="closeLightbox()">
+        <span class="lightbox-close">&times;</span>
+        <img class="lightbox-content" id="lightboxImage">
+        <div style="text-align: center; color: white; margin-top: 10px; font-family: var(--font-sans);">
+            Click outside to close
+        </div>
+    </div>
+
+    <!-- Lightbox Script -->
+    <script>
+        function openLightbox(src) {
+            const modal = document.getElementById('lightboxModal');
+            const img = document.getElementById('lightboxImage');
+
+            if (!modal || !img) {
+                console.error('Lightbox elements not found');
+                return;
+            }
+
+            modal.style.display = "block";
+            img.src = src;
+            document.body.style.overflow = "hidden";
+        }
+
+        function closeLightbox() {
+            const modal = document.getElementById('lightboxModal');
+            if (modal) {
+                modal.style.display = "none";
+            }
+            document.body.style.overflow = "auto";
+        }
+
+        // Close on ESC key
+        document.addEventListener('keydown', function (event) {
+            if (event.key === "Escape") {
+                closeLightbox();
+            }
+        });
+    </script>
 
 </body>
 

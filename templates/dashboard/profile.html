@@ -5,6 +5,19 @@
 {% block dashboard_content %}
 <h1 style="margin-bottom: var(--space-md);">Edit Profile</h1>
 
+{% if form.errors %}
+<div class="alert alert-danger">
+    <h4 style="margin-bottom: 8px;">Please fix the following errors:</h4>
+    <ul style="margin-left: 20px;">
+        {% for field, errors in form.errors.items() %}
+        {% for error in errors %}
+        <li><strong>{{ field|title }}:</strong> {{ error }}</li>
+        {% endfor %}
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
 <form method="POST" action="{{ url_for('dashboard.profile') }}" enctype="multipart/form-data" class="card card-lg">
     {{ form.hidden_tag() }}
 
@@ -61,7 +74,9 @@
         <label class="form-label">Resume (PDF)</label>
         <div style="display: flex; align-items: center; gap: 12px;">
             {% if current_user.resume_pdf %}
-            <span style="color: var(--text-secondary); font-size: 14px;"><span id="resume-filename">📄 {{ current_user.resume_pdf.split('/')[-1].split('_', 1)[-1] if '_' in current_user.resume_pdf.split('/')[-1] else current_user.resume_pdf.split('/')[-1] }}</span></span>
+            <span style="color: var(--text-secondary); font-size: 14px;"><span id="resume-filename">📄 {{
+                    current_user.resume_pdf.split('/')[-1].split('_', 1)[-1] if '_' in
+                    current_user.resume_pdf.split('/')[-1] else current_user.resume_pdf.split('/')[-1] }}</span></span>
             {% else %}
             <span style="color: var(--text-muted); font-size: 14px;">No resume uploaded</span>
             {% endif %}
@@ -293,9 +308,9 @@
     // Resume file preview
     const resumeInput = document.getElementById('resume-input');
     const resumeFilename = document.getElementById('resume-filename');
-    
+
     if (resumeInput) {
-        resumeInput.addEventListener('change', function(e) {
+        resumeInput.addEventListener('change', function (e) {
             const file = e.target.files[0];
             if (file && file.type === 'application/pdf') {
                 if (resumeFilename) {
@@ -319,10 +334,10 @@
     let checkTimeout;
 
     if (usernameInput) {
-        usernameInput.addEventListener('input', function(e) {
+        usernameInput.addEventListener('input', function (e) {
             clearTimeout(checkTimeout);
             const username = e.target.value.trim();
-            
+
             // Update preview immediately
             if (usernameSlug) {
                 usernameSlug.textContent = username || '{{ current_user.username }}';
@@ -349,11 +364,11 @@
 
     function showUsernameFeedback(available, message, isCurrent) {
         removeUsernameFeedback();
-        
+
         const feedback = document.createElement('div');
         feedback.id = 'username-feedback';
         feedback.style.cssText = 'margin-top: 8px; font-size: 14px; padding: 8px 12px; border-radius: 8px; display: flex; align-items: center; gap: 8px;';
-        
+
         if (available) {
             feedback.style.backgroundColor = isCurrent ? '#fff3cd' : '#d1e7dd';
             feedback.style.color = isCurrent ? '#856404' : '#0f5132';
@@ -363,7 +378,7 @@
             feedback.style.color = '#842029';
             feedback.innerHTML = `<span>✗</span> ${message}`;
         }
-        
+
         usernameInput.parentElement.appendChild(feedback);
     }
 
