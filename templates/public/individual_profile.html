@@ -22,7 +22,7 @@
         style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; width: 90%; max-width: 600px;">
         {% for category, message in messages %}
         <div class="alert"
-            style="padding: 16px 24px; margin-bottom: 12px; border-radius: 50px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; background-color: #FBF8CC; color: #1a1a1a; border: 2px solid #1a1a1a; font-family: 'Instrument Serif', serif; font-size: 1.2rem;">
+            style="padding: 16px 24px; margin-bottom: 12px; border-radius: 50px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; background-color: var(--bg-main); color: var(--text-primary); border: 2px solid var(--text-primary); font-family:var(--font-serif); font-size: 1.2rem;">
             <span>{{ message }}</span>
             <button onclick="this.parentElement.remove()"
                 style="background: none; border: none; font-size: 24px; cursor: pointer; color: inherit; line-height: 1; margin-left: 12px;">&times;</button>
@@ -62,7 +62,7 @@
     <div class="banner-section"
         style="background-image: url('{{ url_for('static', filename='uploads/' + user.banner_image) }}');"></div>
     {% else %}
-    <div class="banner-section" style="background: linear-gradient(135deg, var(--yellow-bg), var(--green-bg));"></div>
+    <div class="banner-section" style="background: linear-gradient(135deg, var(--bg-secondary), #e0e0e0);"></div>
     {% endif %}
 
     <!-- Share Modal -->
@@ -318,7 +318,7 @@
 
     <!-- Achievements -->
     {% if user.others %}
-    <section id="achievements" class="content-section" style="background-color: var(--yellow-bg);">
+    <section id="achievements" class="content-section" style="background-color: var(--bg-secondary);">
         <div class="section-header">
             <h2 class="section-title">Awards</h2>
             <div class="section-desc">Recognitions & Certifications</div>
@@ -358,7 +358,7 @@
     <!-- Education -->
     {% if user.education %}
     <section id="education" class="content-section"
-        style="background-color: #FFDD00; border-top: 2px solid var(--text-primary);">
+        style="background-color: var(--bg-main); border-top: 2px solid var(--text-primary);">
         <div class="section-header">
             <h2 class="section-title">Education</h2>
             <div class="section-desc">Academic Background</div>

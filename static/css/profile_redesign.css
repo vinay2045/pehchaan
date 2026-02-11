@@ -2,9 +2,20 @@
 @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600&display=swap');
 
 :root {
-    --yellow-bg: #FBF8CC;
-    --green-bg: #E2F0CB;
-    --text-primary: #1a1a1a;
+    /* New Aesthetic "Editorial" Palette */
+    --bg-main: #FDFCF8;
+    /* Warm, clean cream/off-white */
+    --bg-secondary: #F2F0EA;
+    /* Subtle beige/gray for contrast */
+    --text-primary: #1A1A1A;
+    /* Soft strong black */
+    --accent-color: #C0B283;
+    /* Muted gold/tan accent */
+
+    /* Mapping legacy variables to new palette */
+    --yellow-bg: var(--bg-main);
+    --green-bg: var(--bg-secondary);
+
     --font-serif: 'Instrument Serif';
     --font-sans: 'Inter', sans-serif;
 }
