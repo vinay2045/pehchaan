@@ -120,9 +120,9 @@
         <label class="form-label">Skills</label>
         <div id="skills-container" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
             {% for skill in current_user.skills %}
-            <span class="pill pill-yellow" style="display: inline-flex; align-items: center; gap: 8px;">
-                {% if skill.category %}<strong>{{ skill.category }}:</strong> {% endif %}{{ skill.name }}{% if
-                skill.experience_duration %} <em style="opacity: 0.8;">({{ skill.experience_duration }})</em>{% endif %}
+            <span class="pill pill-yellow" style="display: inline-flex; align-items: center; gap: 8px;"
+                data-skill="{{ skill.name }}" data-category="{{ skill.category }}">
+                {% if skill.category %}<strong>{{ skill.category }}:</strong> {% endif %}{{ skill.name }}
                 <button type="button" onclick="removeSkillElem(this)"
                     style="background: none; border: none; cursor: pointer; font-size: 16px; line-height: 1; padding: 0; color: inherit;">&times;</button>
             </span>

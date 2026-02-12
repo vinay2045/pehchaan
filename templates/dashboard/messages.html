@@ -8,6 +8,7 @@
     {% if messages %}
     <form action="{{ url_for('dashboard.delete_all_messages') }}" method="POST"
         onsubmit="return confirm('Are you sure you want to delete ALL messages? This cannot be undone.');">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
         <button type="submit" class="btn btn-outline"
             style="color: #dc3545; border-color: #dc3545; background: transparent;">
             Delete All Messages
@@ -44,7 +45,7 @@
                     <small>{{message.created_at.strftime('%b %d, %Y')}}</small>
                 </td>
                 <td style="padding: 12px; text-align: center;">
-                    <button class="btn btn-small btn-outline" onclick="viewMessage({{message.id}})">View</button>
+                    <button class="btn btn-small btn-outline" onclick="viewMessage('{{message.id}}')">View</button>
                 </td>
             </tr>
             {% else %}
@@ -78,23 +79,40 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-    const messagesData = {
+<!-- JSON Data Block to safely pass data to JavaScript -->
+<script id="messages-data" type="application/json">
+{
     {% for message in messages %}
-    { { message.id } }: {
-        subject: { { message.subject | tojson } },
-        senderName: { { message.name | tojson } },
-        senderEmail: { { message.email | tojson } },
-        senderPhone: { { (message.phone or '') | tojson } },
-        message: { { message.message | tojson } },
-        createdAt: { { message.created_at.strftime('%B %d, %Y at %I:%M %p') | tojson } }
-    } {% if not loop.last %}, {% endif %}
+    "{{ message.id }}": {
+        "subject": {{ message.subject | tojson }},
+        "senderName": {{ message.name | tojson }},
+        "senderEmail": {{ message.email | tojson }},
+        "senderPhone": {{ (message.phone or '') | tojson }},
+        "message": {{ message.message | tojson }},
+        "createdAt": {{ message.created_at.strftime('%B %d, %Y at %I:%M %p') | tojson }}
+    }{% if not loop.last %}, {% endif %}
     {% endfor %}
-};
+}
+</script>
+
+<script>
+    // Robustly parse the JSON data
+    let messagesData = {};
+    try {
+        const dataElement = document.getElementById('messages-data');
+        if (dataElement) {
+            messagesData = JSON.parse(dataElement.textContent);
+        }
+    } catch (e) {
+        console.error('Failed to parse messages data:', e);
+    }
 
     function viewMessage(messageId) {
-        const msg = messagesData[messageId];
-        if (!msg) return;
+        const msg = messagesData[String(messageId)];
+        if (!msg) {
+            console.error('Message not found:', messageId);
+            return;
+        }
 
         document.getElementById('message-subject').textContent = msg.subject;
         document.getElementById('message-from-name').textContent = msg.senderName;
@@ -113,7 +131,7 @@
         document.getElementById('message-modal').style.display = 'flex';
 
         // Mark as read
-        fetch(`/dashboard/messages/${messageId}/read`, { method: 'POST' });
+        fetch(`/dashboard/messages/${messageId}/read`, { method: 'POST', headers: { 'X-CSRFToken': "{{ csrf_token() }}" } });
     }
 
     function closeMessageModal() {

@@ -147,13 +147,9 @@ def add_project():
         description=request.form.get('description'),
         live_demo_url=request.form.get('demo_url'),
         github_url=request.form.get('github_url'),
-        youtube_url=request.form.get('youtube_url')
+        youtube_url=request.form.get('youtube_url'),
+        technologies=request.form.get('technologies')  # Save directly to column
     )
-    
-    # Store technologies as attribute (will be added to model later)
-    technologies = request.form.get('technologies')
-    if technologies:
-        project._technologies = technologies
     
     db.session.add(project)
     db.session.commit()
@@ -189,7 +185,7 @@ def get_project(project_id):
         'demo_url': project.live_demo_url or '',
         'github_url': project.github_url or '',
         'youtube_url': project.youtube_url or '',
-        'technologies': getattr(project, '_technologies', '') or ''
+        'technologies': project.technologies or ''
     })
 
 @dashboard_bp.route('/projects/edit', methods=['POST'])
@@ -207,11 +203,7 @@ def edit_project():
     project.live_demo_url = request.form.get('demo_url')
     project.github_url = request.form.get('github_url')
     project.youtube_url = request.form.get('youtube_url')
-    
-    # Store technologies
-    technologies = request.form.get('technologies')
-    if technologies:
-        project._technologies = technologies
+    project.technologies = request.form.get('technologies')
     
     # Handle media: YouTube OR Image
     youtube_url = request.form.get('youtube_url')

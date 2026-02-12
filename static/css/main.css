@@ -660,3 +660,46 @@ textarea {
     height: 100px;
   }
 }
+
+/* === RESPONSIVE NAVBAR & LAYOUT === */
+@media (max-width: 768px) {
+  .navbar-content {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center !important;
+    text-align: center;
+    margin-bottom: 40px !important;
+  }
+
+  .navbar-content>div {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .bento-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .container-narrow {
+    padding-left: var(--space-md);
+    padding-right: var(--space-md);
+  }
+
+  .card-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Make tables scrollable on mobile */
+  table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  /* Dashboard profile image responsiveness */
+  .profile-image-container {
+    width: 120px;
+    height: 120px;
+  }
+}

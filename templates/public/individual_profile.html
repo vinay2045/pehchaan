@@ -37,7 +37,22 @@
         <div class="brand-group">
             <div class="logo">pehchaan</div>
             <div class="site-brand">{{ user.full_name or user.username }}</div>
+            <div class="hamburger-menu" onclick="toggleMenu()">
+                <i class="ri-menu-line" style="font-size: 1.5rem;"></i>
+            </div>
         </div>
+        <script>
+            function toggleMenu() {
+                const navLinks = document.querySelector('.nav-links');
+                navLinks.classList.toggle('active');
+            }
+            // Close menu when clicking a link
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                link.addEventListener('click', () => {
+                    document.querySelector('.nav-links').classList.remove('active');
+                });
+            });
+        </script>
         <div class="nav-links">
             <a href="#about">About</a>
             {% if user.experiences %}
@@ -386,9 +401,9 @@
     {% endif %}
 
     <!-- Contact Section -->
-    <section id="contact" style="padding: 6rem 4rem; background-color: white;">
+    <section id="contact" style="padding: 6rem 4rem; background-color: var(--bg-card);">
         <h2 class="section-title" style="font-size: 8rem; margin-bottom: 4rem;">Contact</h2>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6rem; align-items: start;">
+        <div class="contact-grid">
 
             <form method="POST" action="{{ url_for('profile.contact', username=user.username) }}" class="contact-form">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

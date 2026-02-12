@@ -3,12 +3,84 @@
 {% block title %}Dashboard - Pehchaan{% endblock %}
 
 {% block content %}
-<div style="display: flex; min-height: 100vh;">
+<style>
+    @media (max-width: 768px) {
+        .dashboard-layout {
+            flex-direction: column;
+        }
+
+        .dashboard-sidebar {
+            position: fixed;
+            top: 0;
+            left: -260px;
+            /* Hide sidebar */
+            width: 250px;
+            height: 100%;
+            z-index: 1000;
+            transition: left 0.3s ease;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .dashboard-sidebar.active {
+            left: 0;
+        }
+
+        .dashboard-main {
+            padding: var(--space-md) !important;
+            width: 100%;
+        }
+
+        .mobile-header {
+            display: flex !important;
+        }
+
+        .mobile-close-btn {
+            display: block !important;
+        }
+    }
+
+    .mobile-header {
+        display: none;
+        padding: var(--space-md);
+        background: var(--bg-card);
+        border-bottom: 2px solid var(--border-color);
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+    }
+
+    .dashboard-sidebar.active+.sidebar-overlay {
+        display: block;
+    }
+</style>
+
+<div style="display: flex; min-height: 100vh;" class="dashboard-layout">
+    <!-- Mobile Header -->
+    <div class="mobile-header">
+        <span style="font-weight: 700; font-size: 1.2rem;">pehchaan</span>
+        <button onclick="toggleSidebar()"
+            style="background:none; border:none; font-size: 1.5rem; cursor: pointer;">☰</button>
+    </div>
+
     <!-- Sidebar -->
-    <aside
+    <aside class="dashboard-sidebar"
         style="width: 250px; background-color: var(--bg-card); border-right: 2px solid var(--border-color); padding: var(--space-lg);">
         <div style="margin-bottom: var(--space-xl);">
             <a href="{{ url_for('main.index') }}" style="font-size: var(--font-size-xl); font-weight: 600;">pehchaan</a>
+            <!-- Close button for mobile -->
+            <button onclick="toggleSidebar()"
+                style="float: right; display: none; background:none; border:none; font-size: 1.5rem;"
+                class="mobile-close-btn">&times;</button>
         </div>
 
         <nav>
@@ -72,6 +144,7 @@
             <a href="{{ url_for('auth.logout') }}" class="btn btn-outline btn-small btn-block">Logout</a>
         </div>
     </aside>
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
 
     <!-- Main Content -->
     <main style="flex: 1; padding: var(--space-lg);">
@@ -84,4 +157,9 @@
         </div>
     </main>
 </div>
+<script>
+    function toggleSidebar() {
+        document.querySelector('.dashboard-sidebar').classList.toggle('active');
+    }
+</script>
 {% endblock %}

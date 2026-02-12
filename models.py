@@ -111,6 +111,7 @@ class Project(db.Model):
     live_demo_url = db.Column(db.String(255), nullable=True)
     github_url = db.Column(db.String(255), nullable=True)
     youtube_url = db.Column(db.String(255), nullable=True)
+    technologies = db.Column(db.String(255), nullable=True)  # Comma-separated list of technologies
     order = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
