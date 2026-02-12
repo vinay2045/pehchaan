@@ -9,7 +9,7 @@ from app import limiter
 auth_bp = Blueprint('auth', __name__)
 
 @auth_bp.route('/signup', methods=['GET', 'POST'])
-@limiter.limit("3 per hour")
+@limiter.limit("20 per hour")
 def signup():
     """Signup page for Individual and Business users"""
     individual_form = IndividualSignupForm()
