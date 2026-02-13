@@ -4,12 +4,12 @@ from models import db, User, slugify_username
 from blueprints.forms import IndividualSignupForm, BusinessSignupForm, LoginForm
 from utils.qr_generator import generate_qr_code
 from utils.security import check_username_availability
-from app import limiter
+from extensions import limiter
 
 auth_bp = Blueprint('auth', __name__)
 
 @auth_bp.route('/signup', methods=['GET', 'POST'])
-@limiter.limit("20 per hour")
+@limiter.limit("100 per hour")
 def signup():
     """Signup page for Individual and Business users"""
     individual_form = IndividualSignupForm()
@@ -132,7 +132,7 @@ def signup():
                          active_tab='individual')
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
-@limiter.limit("5 per 15 minutes")
+@limiter.limit("50 per 15 minutes")
 def login():
     """Login page"""
     form = LoginForm()

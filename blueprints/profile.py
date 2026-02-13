@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request,
 from flask_login import current_user
 from models import db, User, Message
 from blueprints.forms import ContactMessageForm
-from app import limiter
+from extensions import limiter
 import os
 from config import Config
 
@@ -35,7 +35,7 @@ def add_header(response):
     return response
 
 @profile_bp.route('/<username>/contact', methods=['POST'])
-@limiter.limit("3 per 15 minutes")
+@limiter.limit("30 per 15 minutes")
 def contact(username):
     """Handle contact form submissions"""
     user = User.query.filter_by(username=username.lower()).first_or_404()
