@@ -13,7 +13,7 @@ def generate_qr_code(username):
     )
     
     # Profile URL
-    url = f"pehchaan.com/{username}"
+    url = f"https://pehchaan-h9ub.onrender.com/{username}"
     qr.add_data(url)
     qr.make(fit=True)
     
