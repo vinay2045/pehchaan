@@ -182,14 +182,25 @@
     function deleteItem(itemId) {
         if (!confirm('Are you sure you want to delete this achievement?')) return;
 
-        fetch(`/dashboard/others/${itemId}/delete`, { method: 'POST' })
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        fetch(`/dashboard/others/${itemId}/delete`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken
+            }
+        })
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
                     location.reload();
                 } else {
-                    alert('Error deleting achievement');
+                    alert(data.message || 'Error deleting achievement');
                 }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('An error occurred while deleting the achievement');
             });
     }
 
